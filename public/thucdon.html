@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thực đơn - Jollibee Clone</title>
+
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f7f7f7;
+      }
+
+      /* HEADER */
+      header {
+        background: #d6001c;
+        padding: 15px 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: white;
+      }
+      header .logo {
+        font-size: 28px;
+        font-weight: bold;
+      }
+      header nav a {
+        color: white;
+        margin-left: 25px;
+        text-decoration: none;
+        font-size: 18px;
+      }
+
+      #cart-btn {
+        background: yellow;
+        padding: 6px 12px;
+        border-radius: 6px;
+        color: black !important;
+        font-weight: bold;
+      }
+
+      /* CATEGORY BAR */
+      .category-bar {
+        background: #fff;
+        padding: 15px 0;
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        border-bottom: 1px solid #ddd;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+      .category-item {
+        padding: 10px 18px;
+        background: #ffe6e8;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 16px;
+        border: 1px solid #d6001c;
+      }
+      .category-item:hover,
+      .category-item.active {
+        background: #d6001c;
+        color: white;
+      }
+
+      /* PRODUCT */
+      .section-block {
+        padding: 30px 40px;
+        max-width: 1200px;
+        margin: auto;
+      }
+      .section-title {
+        font-size: 26px;
+        font-weight: bold;
+        color: #b30015;
+        margin-bottom: 15px;
+      }
+
+      .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 20px;
+      }
+      .product-card {
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        transition: 0.2s;
+        text-align: center;
+      }
+      .product-card:hover {
+        transform: translateY(-4px);
+      }
+      .product-image {
+        width: 100%;
+        height: 160px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-bottom: 10px;
+      }
+      .product-name {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      .product-price {
+        font-size: 16px;
+        color: #d6001c;
+        margin-bottom: 10px;
+      }
+
+      .btn-cart {
+        background: #d6001c;
+        color: white;
+        padding: 8px 14px;
+        font-size: 14px;
+        border-radius: 6px;
+        cursor: pointer;
+        border: none;
+      }
+      .btn-cart:hover {
+        background: #a00014;
+      }
+
+      footer {
+        margin-top: 40px;
+        padding: 20px;
+        background: #d6001c;
+        color: white;
+        text-align: center;
+      }
+
+      /* Toast thông báo */
+      .toast {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(255, 230, 0, 0.95);
+        color: #000;
+        padding: 8px 14px; /* Nhỏ hơn */
+        font-size: 11px; /* Chữ nhỏ lại */
+        border-radius: 6px;
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.4s ease;
+        pointer-events: none;
+        max-width: 200px; /* Giới hạn chiều ngang */
+        text-align: center; /* Căn giữa nội dung */
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      }
+
+      .toast.show {
+        opacity: 1;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <div class="logo">Jollibee Clone</div>
+      <nav>
+        <a href="index.html">Trang chủ</a>
+        <a href="thucdon.html">Thực đơn</a>
+        <a href="khuyenmai.html">Khuyến mãi</a>
+        <a href="lienhe.html">Liên hệ</a>
+        <a href="theodoi.html">Theo dõi đơn hàng</a>
+
+        <a id="cart-btn" href="giohang.html"
+          >🛒 Giỏ hàng (<span id="cart-count">0</span>)</a
+        >
+
+        <span id="user-area" style="margin-left: 20px"></span>
+      </nav>
+    </header>
+    <script src="img-config.js"></script>
+
+    <!-- CATEGORY BAR -->
+    <div class="category-bar" id="category-bar">Đang tải danh mục...</div>
+
+    <!-- COMBO -->
+    <section class="section-block">
+      <div class="section-title">Combo ưu đãi</div>
+      <div class="product-grid" id="combo-grid"></div>
+    </section>
+
+    <!-- SẢN PHẨM THEO DANH MỤC -->
+    <section class="section-block">
+      <div class="section-title">Danh sách sản phẩm</div>
+      <div class="product-grid" id="product-grid"></div>
+    </section>
+
+    <footer>
+      <div
+        class="footer-container"
+        style="max-width: 1200px; margin: 0 auto; padding: 0 20px"
+      >
+        <div
+          style="
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            padding: 30px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+          "
+        >
+          <!-- Logo và mô tả -->
+          <div style="flex: 1; min-width: 250px; margin-bottom: 20px">
+            <h3 style="font-size: 28px; font-weight: bold; margin: 0 0 10px 0">
+              Jollibee Clone
+            </h3>
+            <p style="margin: 0; opacity: 0.9; line-height: 1.6">
+              Mang đến niềm vui ẩm thực Philippines đích thực với gà giòn Joy,
+              Spaghetti ngọt ngào và những món ăn yêu thích khác!
+            </p>
+          </div>
+
+          <!-- Liên kết nhanh -->
+          <div style="flex: 1; min-width: 200px; margin-bottom: 20px">
+            <h4 style="margin: 0 0 15px 0; font-size: 18px">Liên kết</h4>
+            <ul style="list-style: none; padding: 0; margin: 0; line-height: 2">
+              <li>
+                <a
+                  href="index.html"
+                  style="color: white; text-decoration: none; opacity: 0.9"
+                  >Trang chủ</a
+                >
+              </li>
+              <li>
+                <a
+                  href="thucdon.html"
+                  style="color: white; text-decoration: none; opacity: 0.9"
+                  >Thực đơn</a
+                >
+              </li>
+              <li>
+                <a
+                  href="khuyenmai.html"
+                  style="color: white; text-decoration: none; opacity: 0.9"
+                  >Khuyến mãi</a
+                >
+              </li>
+              <li>
+                <a
+                  href="lienhe.html"
+                  style="color: white; text-decoration: none; opacity: 0.9"
+                  >Liên hệ</a
+                >
+              </li>
+              <li>
+                <a
+                  href="theodoi.html"
+                  style="color: white; text-decoration: none; opacity: 0.9"
+                  >Theo dõi đơn hàng</a
+                >
+              </li>
+            </ul>
+          </div>
+
+          <!-- Thông tin liên hệ -->
+          <div style="flex: 1; min-width: 250px; margin-bottom: 20px">
+            <h4 style="margin: 0 0 15px 0; font-size: 18px">Liên hệ</h4>
+            <p style="margin: 8px 0; opacity: 0.9">
+              <strong>Hotline:</strong> 1900 1234<br />
+              <strong>Email:</strong> support@jollibeeclone.vn<br />
+              <strong>Thời gian:</strong> 8:00 - 22:00 hàng ngày
+            </p>
+          </div>
+        </div>
+
+        <!-- Bản quyền -->
+        <div
+          style="
+            padding: 20px 0;
+            text-align: center;
+            opacity: 0.8;
+            font-size: 14px;
+          "
+        >
+          © 2025 <strong>Jollibee Clone</strong>. Tất cả các quyền được bảo
+          lưu.<br />
+          <small
+            >Lưu ý: Đây là website mô phỏng học tập, không có liên quan đến
+            thương hiệu Jollibee chính thức.</small
+          >
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // ==================== TOAST MESSAGE ====================
+      function showToast(message) {
+        // Tạo div
+        let toast = document.createElement("div");
+        toast.className = "toast";
+        toast.innerText = message;
+
+        document.body.appendChild(toast);
+
+        // Hiện toast
+        setTimeout(() => {
+          toast.classList.add("show");
+        }, 50);
+
+        // 2 giây sau thì mờ dần và xóa bỏ
+        setTimeout(() => {
+          toast.classList.remove("show");
+
+          setTimeout(() => {
+            toast.remove();
+          }, 500);
+        }, 2000);
+      }
+
+      /* ======================================
+          🟢 HIỂN THỊ USER
+       ====================================== */
+      function loadUser() {
+        const userArea = document.getElementById("user-area");
+        const user = localStorage.getItem("user");
+
+        if (!user) {
+          userArea.innerHTML = `<a href="login.html" style="color:yellow;">Đăng nhập</a>`;
+          return;
+        }
+
+        const u = JSON.parse(user);
+        userArea.innerHTML = `
+          Xin chào, <b>${u.hoTen || u.username}</b> |
+          <a href="#" onclick="logout()" style="color:yellow;">Đăng xuất</a>
+        `;
+      }
+      function logout() {
+        localStorage.removeItem("user");
+        loadUser();
+      }
+      loadUser();
+
+      /* ======================================
+          🛒 GIỎ HÀNG – LOCAL STORAGE
+       ====================================== */
+      async function addToCart(sp) {
+        try {
+          const user = JSON.parse(localStorage.getItem("user"));
+          if (!user) {
+            alert("Bạn cần đăng nhập để thêm vào giỏ hàng");
+            window.location.href = "login.html";
+            return;
+          }
+
+          const MaUser = user.maNguoiDung;
+          const MaGioHang = await getOrCreateCart(MaUser);
+
+          // Xác định LoaiSanPham, MaSanPham hoặc MaCombo
+          let payload = {
+            MaGioHang,
+            LoaiSanPham: sp.id.startsWith("C") ? "combo" : "sanpham", // giả sử combo có id bắt đầu 'C'
+            SoLuong: 1,
+          };
+          if (payload.LoaiSanPham === "combo") {
+            payload.MaCombo = sp.id;
+          } else {
+            payload.MaSanPham = sp.id;
+          }
+
+          const res = await fetch(window.API_BASE + "/api/giohang/add", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+          });
+
+          if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || "Lỗi thêm sản phẩm vào giỏ hàng");
+          }
+
+          showToast("Thêm vào giỏ hàng thành công!");
+
+          // Cập nhật số lượng giỏ hàng hiển thị
+          updateCartCount();
+        } catch (error) {
+          alert(error.message);
+        }
+      }
+
+      async function getOrCreateCart(maUser) {
+        let res = await fetch(`${window.API_BASE}/api/giohang/user/${maUser}`);
+        if (res.status === 404) {
+          // Chưa có giỏ hàng -> tạo mới
+          const resCreate = await fetch(
+            `${window.API_BASE}/api/giohang/user/${maUser}`,
+            {
+              method: "POST",
+            }
+          );
+          if (!resCreate.ok) throw new Error("Không thể tạo giỏ hàng");
+          const dataCreate = await resCreate.json();
+          // Trả về id giỏ hàng mới tạo
+          return dataCreate.giohang.MaGioHang;
+        }
+        if (!res.ok) throw new Error("Lỗi lấy giỏ hàng");
+        const data = await res.json();
+        return data.giohang.MaGioHang;
+      }
+
+      async function updateCartCount() {
+        const user = JSON.parse(localStorage.getItem("user"));
+        const cartCount = document.getElementById("cart-count");
+
+        if (!user) {
+          cartCount.innerText = 0;
+          return;
+        }
+
+        try {
+          const res = await fetch(
+            `${window.API_BASE}/api/giohang/user/${user.maNguoiDung}`
+          );
+
+          if (!res.ok) throw new Error("Không lấy được giỏ hàng");
+
+          const data = await res.json();
+
+          // data.chiTiet là danh sách sp trong giỏ
+          const total = data.chiTiet.reduce(
+            (sum, item) => sum + item.SoLuong,
+            0
+          );
+
+          cartCount.innerText = total;
+        } catch (err) {
+          console.error("Lỗi load cart count:", err);
+          cartCount.innerText = 0;
+        }
+      }
+
+      // Gọi khi tải trang
+      updateCartCount();
+
+      /* ======================================
+          🟡 LOAD DANH MỤC
+       ====================================== */
+      async function loadDanhMuc() {
+        const bar = document.getElementById("category-bar");
+
+        const res = await fetch(window.API_BASE + "/api/danhmuc");
+        const data = await res.json();
+
+        bar.innerHTML = `<div class="category-item active" onclick="filterProduct('all', this)">Tất cả</div>`;
+
+        data.forEach((dm) => {
+          bar.innerHTML += `
+            <div class="category-item" onclick="filterProduct('${dm.MaDanhMuc}', this)">
+              ${dm.TenDanhMuc}
+            </div>
+          `;
+        });
+      }
+
+      /* ======================================
+          🔴 LOAD COMBO
+       ====================================== */
+      async function loadCombo() {
+        const grid = document.getElementById("combo-grid");
+
+        const res = await fetch(window.API_BASE + "/api/combo");
+        const data = await res.json();
+
+        grid.innerHTML = "";
+        data.forEach((cb) => {
+          grid.innerHTML += `
+            <div class="product-card">
+              <img src="${window.IMG_BASE}/${
+            cb.HinhAnh
+          }" class="product-image" onerror="this.src=window.IMG_BASE+'/combo-ga-ran.jpg'">
+              <div class="product-name">${cb.TenCombo}</div>
+              <div class="product-price">${Number(
+                cb.GiaCombo
+              ).toLocaleString()}₫</div>
+              <button class="btn-cart" onclick='addToCart({
+                  id: "${cb.MaCombo}",
+                  name: "${cb.TenCombo}",
+                  price: ${cb.GiaCombo},
+                  img: "${cb.HinhAnh}"
+              })'>🛒 Thêm vào giỏ</button>
+            </div>
+          `;
+        });
+      }
+
+      /* ======================================
+          🔵 LOAD SẢN PHẨM
+       ====================================== */
+      let allProducts = [];
+
+      async function loadProducts() {
+        const grid = document.getElementById("product-grid");
+        const res = await fetch(`${window.API_BASE}/api/sanpham`);
+        allProducts = await res.json();
+
+        showProducts(allProducts);
+      }
+
+      function showProducts(list) {
+        const grid = document.getElementById("product-grid");
+        grid.innerHTML = "";
+
+        list.forEach((sp) => {
+          grid.innerHTML += `
+            <div class="product-card">
+              <img src="${window.IMG_BASE}/${
+            sp.HinhAnh
+          }" class="product-image" onerror="this.src=window.IMG_BASE+'/ga-ran-1.jpg'">
+              <div class="product-name">${sp.TenSanPham}</div>
+              <div class="product-price">${Number(
+                sp.Gia
+              ).toLocaleString()}₫</div>
+
+              <button class="btn-cart" onclick='addToCart({
+                  id: "${sp.MaSanPham}",
+                  name: "${sp.TenSanPham}",
+                  price: ${sp.Gia},
+                  img: "${sp.HinhAnh}"
+              })'>🛒 Thêm vào giỏ</button>
+            </div>
+          `;
+        });
+      }
+
+      /* ======================================
+          🟣 FILTER DANH MỤC
+       ====================================== */
+      function filterProduct(maDM, element) {
+        document
+          .querySelectorAll(".category-item")
+          .forEach((e) => e.classList.remove("active"));
+        element.classList.add("active");
+
+        if (maDM === "all") return showProducts(allProducts);
+
+        const filtered = allProducts.filter((sp) => sp.MaDanhMuc === maDM);
+        showProducts(filtered);
+      }
+
+      // CHẠY TẤT CẢ
+      loadDanhMuc();
+      loadCombo();
+      loadProducts();
+    </script>
+  </body>
+</html>

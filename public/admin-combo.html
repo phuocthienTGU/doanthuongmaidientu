@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Quản lý Combo</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f5f5f5;
+        margin: 0;
+      }
+      header {
+        background: #d6001c;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        font-size: 24px;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 12px;
+        text-align: center;
+      }
+      th {
+        background: #d6001c;
+        color: white;
+      }
+      .btn {
+        padding: 8px 12px;
+        margin: 0 5px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .btn-add {
+        background: #28a745;
+        color: white;
+      }
+      .btn-edit {
+        background: #ffc107;
+        color: black;
+      }
+      .btn-delete {
+        background: #dc3545;
+        color: white;
+      }
+      .form-group {
+        margin: 15px 0;
+      }
+      input {
+        padding: 8px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      #modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        justify-content: center;
+        align-items: center;
+      }
+      .modal-content {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        width: 500px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>QUẢN LÝ COMBO</header>
+    <script src="img-config.js"></script>
+    <div class="container">
+      <button class="btn btn-add" onclick="openAddForm()">+ Thêm combo</button>
+      <a href="admin.html" style="float: right; color: #d6001c">← Quay lại</a>
+
+      <table id="comboTable">
+        <thead>
+          <tr>
+            <th>Mã</th>
+            <th>Tên combo</th>
+            <th>Giá</th>
+            <th>Mô tả</th>
+            <th>Hình</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Modal thêm/sửa -->
+    <div id="modal">
+      <div class="modal-content">
+        <h3 id="formTitle">Thêm combo mới</h3>
+        <div class="form-group">
+          <label>Tên combo</label><input id="TenCombo" required />
+        </div>
+        <div class="form-group">
+          <label>Giá combo</label><input id="GiaCombo" type="number" required />
+        </div>
+        <div class="form-group"><label>Mô tả</label><input id="MoTa" /></div>
+        <div class="form-group">
+          <label>Hình ảnh (tên file)</label
+          ><input id="HinhAnh" placeholder="combo1.jpg" />
+        </div>
+        <button class="btn btn-add" onclick="saveCombo()">Lưu</button>
+        <button class="btn" onclick="closeForm()" style="background: #ccc">
+          Hủy
+        </button>
+      </div>
+    </div>
+
+    <script>
+      const API = `${window.API_BASE}/api/combo`;
+      let editingId = null;
+
+      async function loadCombos() {
+        try {
+          const res = await fetch(API);
+          if (!res.ok) throw new Error("Lỗi tải combo");
+          const data = await res.json();
+          const tbody = document.querySelector("#comboTable tbody");
+          tbody.innerHTML = "";
+          data.forEach((c) => {
+            tbody.innerHTML += `
+              <tr>
+                <td>${c.MaCombo}</td>
+                <td>${c.TenCombo}</td>
+                <td>${Number(c.GiaCombo).toLocaleString()}₫</td>
+                <td>${c.MoTa || ""}</td>
+                <td><img src="${window.IMG_BASE}/${
+              c.HinhAnh || "combo-ga-ran.jpg"
+            }" width="60" alt="${
+              c.TenCombo
+            }" onerror="this.src=window.IMG_BASE+'/combo-ga-ran.jpg'" /></td>
+                <td>
+                  <button class="btn btn-edit" onclick="editCombo('${
+                    c.MaCombo
+                  }')">Sửa</button>
+                  <button class="btn btn-delete" onclick="deleteCombo('${
+                    c.MaCombo
+                  }')">Xóa</button>
+                </td>
+              </tr>
+            `;
+          });
+        } catch (err) {
+          alert("Lỗi tải combo: " + err.message);
+        }
+      }
+
+      function openAddForm() {
+        editingId = null;
+        document.getElementById("formTitle").textContent = "Thêm combo mới";
+        document.getElementById("TenCombo").value = "";
+        document.getElementById("GiaCombo").value = "";
+        document.getElementById("MoTa").value = "";
+        document.getElementById("HinhAnh").value = "";
+        document.getElementById("modal").style.display = "flex";
+      }
+
+      async function editCombo(maCombo) {
+        try {
+          const res = await fetch(`${API}/${maCombo}`);
+          if (!res.ok) throw new Error("Không tìm thấy combo");
+          const c = await res.json();
+          editingId = maCombo;
+          document.getElementById("formTitle").textContent = "Sửa combo";
+          document.getElementById("TenCombo").value = c.TenCombo;
+          document.getElementById("GiaCombo").value = c.GiaCombo;
+          document.getElementById("MoTa").value = c.MoTa || "";
+          document.getElementById("HinhAnh").value = c.HinhAnh;
+          document.getElementById("modal").style.display = "flex";
+        } catch (err) {
+          alert("Lỗi tải combo để sửa: " + err.message);
+        }
+      }
+
+      async function saveCombo() {
+        const payload = {
+          TenCombo: document.getElementById("TenCombo").value.trim(),
+          GiaCombo: document.getElementById("GiaCombo").value,
+          MoTa: document.getElementById("MoTa").value.trim(),
+          HinhAnh: document.getElementById("HinhAnh").value.trim(),
+        };
+
+        if (!payload.TenCombo || !payload.GiaCombo) {
+          alert("Vui lòng điền đầy đủ Tên combo và Giá!");
+          return;
+        }
+
+        try {
+          let res;
+          if (editingId) {
+            // Sửa
+            payload.TrangThai = "hienthi"; // Đảm bảo không bị ẩn
+            res = await fetch(`${API}/${editingId}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+            alert("Sửa combo thành công!");
+          } else {
+            // Thêm mới
+            res = await fetch(API, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+            alert("Thêm combo thành công!");
+          }
+
+          if (!res.ok) throw new Error("Lưu thất bại");
+          closeForm();
+          loadCombos();
+        } catch (err) {
+          alert("Lỗi lưu combo: " + err.message);
+        }
+      }
+
+      async function deleteCombo(maCombo) {
+        if (!confirm("Bạn chắc chắn muốn xóa combo này?")) return;
+        try {
+          const res = await fetch(`${API}/${maCombo}`, { method: "DELETE" });
+          if (!res.ok) throw new Error("Xóa thất bại");
+          alert("Xóa combo thành công!");
+          loadCombos();
+        } catch (err) {
+          alert("Lỗi xóa combo: " + err.message);
+        }
+      }
+
+      function closeForm() {
+        document.getElementById("modal").style.display = "none";
+      }
+
+      // Load ban đầu
+      loadCombos();
+    </script>
+  </body>
+</html>

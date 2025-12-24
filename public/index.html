@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jollibee UI</title>
+
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f7f7f7;
+      }
+
+      /* HEADER */
+      header {
+        background: #d6001c;
+        padding: 15px 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: white;
+      }
+      header .logo {
+        font-size: 28px;
+        font-weight: bold;
+      }
+      header nav a {
+        color: white;
+        margin-left: 25px;
+        text-decoration: none;
+        font-size: 18px;
+      }
+
+      /* BANNER */
+      .banner {
+        width: 100%;
+        height: 360px;
+        background: #ccc;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 32px;
+        color: #333;
+      }
+
+      /* PRODUCT */
+      .product-section {
+        padding: 40px;
+        max-width: 1200px;
+        margin: auto;
+      }
+      .product-title {
+        font-size: 28px;
+        margin-bottom: 20px;
+        font-weight: bold;
+        color: #b30015;
+      }
+      .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 20px;
+      }
+
+      .product-card {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+        padding: 15px;
+        text-align: center;
+        transition: 0.2s;
+      }
+      .product-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.18);
+      }
+      .product-image {
+        width: 100%;
+        height: 160px;
+        object-fit: cover;
+        border-radius: 6px;
+        margin-bottom: 10px;
+      }
+      .product-name {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 8px;
+      }
+      .product-price {
+        font-size: 16px;
+        color: #d6001c;
+        margin-bottom: 12px;
+      }
+      .btn-buy {
+        padding: 10px 14px;
+        background: #d6001c;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      footer {
+        margin-top: 40px;
+        padding: 20px;
+        background: #d6001c;
+        color: white;
+        text-align: center;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <div class="logo">Jollibee Clone</div>
+      <nav>
+        <a href="index.html">Trang chủ</a>
+        <a href="thucdon.html">Thực đơn</a>
+        <a href="khuyenmai.html">Khuyến mãi</a>
+        <a href="lienhe.html">Liên hệ</a>
+        <a href="theodoi.html">Theo dõi đơn hàng</a>
+        <a
+          id="cart-btn"
+          href="giohang.html"
+          style="
+            background: yellow;
+            padding: 6px 12px;
+            border-radius: 6px;
+            color: black !important;
+            font-weight: bold;
+            margin-left: 15px;
+          "
+        >
+          🛒 Giỏ hàng (<span id="cart-count">0</span>)
+        </a>
+
+        <!-- Khu đăng nhập -->
+        <span id="user-area" style="margin-left: 20px; font-size: 18px">
+          <!-- nội dung sẽ tự thay đổi bằng JavaScript -->
+        </span>
+      </nav>
+    </header>
+    <script src="img-config.js"></script>
+
+    <div
+      class="banner"
+      style="
+        background-image: url('https://www.jollibeefoods.com/_next/image?url=https%3A%2F%2Fjollibee-prod-media.s3.us-west-2.amazonaws.com%2FJB_1835_Catering_Homepage_Banner_960x600_20b5e0998e.png&w=1920&q=75');
+        background-size: cover;
+        background-position: center;
+      "
+    ></div>
+
+    <section class="product-section">
+      <div class="product-title">Món ăn nổi bật</div>
+      <div class="product-grid" id="product-grid">
+        <!-- Sản phẩm từ DB sẽ được load vào đây -->
+      </div>
+    </section>
+
+    <footer>
+      <div
+        class="footer-container"
+        style="max-width: 1200px; margin: 0 auto; padding: 0 20px"
+      >
+        <div
+          style="
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            padding: 30px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+          "
+        >
+          <!-- Logo và mô tả -->
+          <div style="flex: 1; min-width: 250px; margin-bottom: 20px">
+            <h3 style="font-size: 28px; font-weight: bold; margin: 0 0 10px 0">
+              Jollibee Clone
+            </h3>
+            <p style="margin: 0; opacity: 0.9; line-height: 1.6">
+              Mang đến niềm vui ẩm thực Philippines đích thực với gà giòn Joy,
+              Spaghetti ngọt ngào và những món ăn yêu thích khác!
+            </p>
+          </div>
+
+          <!-- Liên kết nhanh -->
+          <div style="flex: 1; min-width: 200px; margin-bottom: 20px">
+            <h4 style="margin: 0 0 15px 0; font-size: 18px">Liên kết</h4>
+            <ul style="list-style: none; padding: 0; margin: 0; line-height: 2">
+              <li>
+                <a
+                  href="index.html"
+                  style="color: white; text-decoration: none; opacity: 0.9"
+                  >Trang chủ</a
+                >
+              </li>
+              <li>
+                <a
+                  href="thucdon.html"
+                  style="color: white; text-decoration: none; opacity: 0.9"
+                  >Thực đơn</a
+                >
+              </li>
+              <li>
+                <a
+                  href="khuyenmai.html"
+                  style="color: white; text-decoration: none; opacity: 0.9"
+                  >Khuyến mãi</a
+                >
+              </li>
+              <li>
+                <a
+                  href="lienhe.html"
+                  style="color: white; text-decoration: none; opacity: 0.9"
+                  >Liên hệ</a
+                >
+              </li>
+              <li>
+                <a
+                  href="theodoi.html"
+                  style="color: white; text-decoration: none; opacity: 0.9"
+                  >Theo dõi đơn hàng</a
+                >
+              </li>
+            </ul>
+          </div>
+
+          <!-- Thông tin liên hệ -->
+          <div style="flex: 1; min-width: 250px; margin-bottom: 20px">
+            <h4 style="margin: 0 0 15px 0; font-size: 18px">Liên hệ</h4>
+            <p style="margin: 8px 0; opacity: 0.9">
+              <strong>Hotline:</strong> 1900 1234<br />
+              <strong>Email:</strong> support@jollibeeclone.vn<br />
+              <strong>Thời gian:</strong> 8:00 - 22:00 hàng ngày
+            </p>
+          </div>
+        </div>
+
+        <!-- Bản quyền -->
+        <div
+          style="
+            padding: 20px 0;
+            text-align: center;
+            opacity: 0.8;
+            font-size: 14px;
+          "
+        >
+          © 2025 <strong>Jollibee Clone</strong>. Tất cả các quyền được bảo
+          lưu.<br />
+          <small
+            >Lưu ý: Đây là website mô phỏng học tập, không có liên quan đến
+            thương hiệu Jollibee chính thức.</small
+          >
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      function loadUser() {
+        const userArea = document.getElementById("user-area");
+        const user = localStorage.getItem("user");
+
+        if (!user) {
+          userArea.innerHTML = `
+        <a href="login.html" style="color: yellow;">Đăng nhập</a>
+      `;
+          return;
+        }
+
+        const u = JSON.parse(user);
+        const name = u.hoTen || u.username || u.ten || null;
+
+        if (name) {
+          userArea.innerHTML = `
+        Xin chào, <b>${name}</b> |
+        <a href="#" onclick="logout()" style="color: yellow;">Đăng xuất</a>
+      `;
+        }
+      }
+
+      function logout() {
+        localStorage.removeItem("user");
+        alert("Đã đăng xuất!");
+        loadUser();
+      }
+      loadUser();
+
+      /* ================== GIỎ HÀNG ================== */
+
+      async function getOrCreateCart(maUser) {
+        let res = await fetch(`${window.API_BASE}/api/giohang/user/${maUser}`);
+
+        if (res.status === 404) {
+          const createRes = await fetch(
+            `${window.API_BASE}/api/giohang/user/${maUser}`,
+            { method: "POST" }
+          );
+          const data = await createRes.json();
+          return data.giohang.MaGioHang;
+        }
+
+        const data = await res.json();
+        return data.giohang.MaGioHang;
+      }
+
+      async function addToCart(sp) {
+        try {
+          const user = JSON.parse(localStorage.getItem("user"));
+          if (!user) {
+            alert("Bạn cần đăng nhập để thêm vào giỏ!");
+            window.location.href = "login.html";
+            return;
+          }
+
+          const MaUser = user.maNguoiDung;
+          const MaGioHang = await getOrCreateCart(MaUser);
+
+          const payload = {
+            MaGioHang,
+            LoaiSanPham: "sanpham",
+            MaSanPham: sp.id,
+            SoLuong: 1,
+          };
+
+          const res = await fetch(window.API_BASE + "/api/giohang/add", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          const result = await res.json();
+          if (!res.ok) throw new Error(result.error || "Lỗi thêm giỏ hàng");
+
+          alert("✅ Đã thêm vào giỏ hàng!");
+          alert("✅ Đã thêm vào giỏ!");
+          updateCartCount();
+        } catch (err) {
+          alert("❌ " + err.message);
+        }
+      }
+
+      /* ================== LOAD SẢN PHẨM + NÚT GIỎ HÀNG ================== */
+
+      async function loadProducts() {
+        const grid = document.getElementById("product-grid");
+        grid.innerHTML = "Đang tải sản phẩm...";
+
+        try {
+          const res = await fetch(`${window.API_BASE}/api/sanpham`);
+          const data = await res.json();
+
+          grid.innerHTML = "";
+
+          data.forEach((sp) => {
+            const card = `
+  <div class="product-card">  
+    <img src="${window.IMG_BASE}/${sp.HinhAnh || "ga-ran-1.jpg"}" 
+         class="product-image" 
+         alt="${sp.TenSanPham}"
+         onerror="this.src=window.IMG_BASE+'/ga-ran-1.jpg'; this.onerror=null;">
+    <div class="product-name">${sp.TenSanPham}</div>
+    <div class="product-price">${Number(sp.Gia).toLocaleString()}₫</div>
+
+    <button class="btn-buy" onclick='addToCart({
+      id: "${sp.MaSanPham}",
+      name: "${sp.TenSanPham}",
+      price: ${sp.Gia},
+      img: "${sp.HinhAnh}"
+    })'>🛒 Thêm vào giỏ</button>
+  </div>
+`;
+            grid.innerHTML += card;
+          });
+        } catch (err) {
+          grid.innerHTML = "Không thể tải dữ liệu!";
+          console.error(err);
+        }
+      }
+
+      loadProducts();
+
+      async function updateCartCount() {
+        const user = JSON.parse(localStorage.getItem("user"));
+        const cartCount = document.getElementById("cart-count");
+
+        if (!user) {
+          cartCount.innerText = 0;
+          return;
+        }
+
+        try {
+          const res = await fetch(
+            `${window.API_BASE}/api/giohang/user/${user.maNguoiDung}`
+          );
+
+          if (!res.ok) throw new Error("Không lấy được giỏ hàng");
+
+          const data = await res.json();
+
+          // data.chiTiet là danh sách sp trong giỏ
+          const total = data.chiTiet.reduce(
+            (sum, item) => sum + item.SoLuong,
+            0
+          );
+
+          cartCount.innerText = total;
+        } catch (err) {
+          console.error("Lỗi load cart count:", err);
+          cartCount.innerText = 0;
+        }
+      }
+
+      // Gọi khi tải trang
+      updateCartCount();
+    </script>
+  </body>
+</html>

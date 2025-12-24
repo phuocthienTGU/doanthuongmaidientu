@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lịch sử đơn hàng - Jollibee Clone</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #fff7f7;
+        margin: 0;
+      }
+      header {
+        background: #d6001c;
+        padding: 15px 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: white;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+      }
+      header .logo {
+        font-size: 28px;
+        font-weight: bold;
+      }
+      header nav a {
+        color: white;
+        margin-left: 25px;
+        text-decoration: none;
+        font-size: 18px;
+        transition: 0.2s;
+      }
+      header nav a:hover {
+        color: #ffe600;
+      }
+      .container {
+        max-width: 1200px;
+        background: white;
+        margin: 30px auto;
+        padding: 25px;
+        border-radius: 16px;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+      }
+      h2 {
+        color: #b30015;
+        margin-bottom: 15px;
+        font-size: 26px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+        text-align: center;
+      }
+      th {
+        background: #ffe2e4;
+        font-size: 16px;
+      }
+      .status {
+        font-weight: bold;
+      }
+      .status.hoan_thanh {
+        color: #009900;
+      }
+      .status.huy {
+        color: #888;
+        text-decoration: line-through;
+      }
+      button {
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        margin: 2px;
+        transition: 0.2s;
+      }
+      button:hover {
+        opacity: 0.9;
+      }
+      .btn-danhgia {
+        background: #28a745;
+        color: white;
+      }
+      .btn-da-danhgia {
+        background: #6c757d;
+        color: white;
+        cursor: not-allowed;
+      }
+      .btn-xem {
+        background: #007bff;
+        color: white;
+      }
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+      }
+      .modal-content {
+        background: white;
+        margin: 15% auto;
+        padding: 30px;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      }
+      .close {
+        float: right;
+        font-size: 30px;
+        cursor: pointer;
+        color: #d6001c;
+      }
+      .stars {
+        font-size: 40px;
+        text-align: center;
+        margin: 20px 0;
+      }
+      .star {
+        color: #ddd;
+        cursor: pointer;
+        transition: color 0.2s;
+      }
+      .star.active {
+        color: #ffd700;
+      }
+      .form-group {
+        margin: 15px 0;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+      }
+      .form-group textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        resize: vertical;
+      }
+      .submit-btn {
+        background: #d6001c;
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        width: 100%;
+        font-size: 16px;
+      }
+      .submit-btn:hover {
+        background: #b30015;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="img-config.js"></script>
+    <header>
+      <div class="logo">Jollibee Clone</div>
+      <nav>
+        <a href="index.html">Trang chủ</a>
+        <a href="thucdon.html">Thực đơn</a>
+        <a href="khuyenmai.html">Khuyến mãi</a>
+        <a href="lienhe.html">Liên hệ</a>
+        <a href="theodoi.html" style="color: yellow">Theo dõi đơn</a>
+        <a href="lichsu.html">Lịch sử đơn hàng</a>
+
+        <a
+          id="cart-btn"
+          href="giohang.html"
+          style="
+            background: yellow;
+            padding: 6px 12px;
+            border-radius: 6px;
+            color: black !important;
+            font-weight: bold;
+            margin-left: 15px;
+          "
+        >
+          🛒 Giỏ hàng (<span id="cart-count">0</span>)
+        </a>
+
+        <!-- Khu đăng nhập -->
+        <span id="user-area" style="margin-left: 20px; font-size: 18px">
+          <!-- nội dung sẽ tự thay đổi bằng JavaScript -->
+        </span>
+      </nav>
+    </header>
+    <div class="container">
+      <h2>Lịch sử đơn hàng</h2>
+
+      <table id="history-table">
+        <thead>
+          <tr>
+            <th>Mã đơn</th>
+            <th>Ngày đặt</th>
+            <th>Tổng tiền</th>
+            <th>Trạng thái</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Modal đánh giá -->
+    <div id="ratingModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeRatingModal()">×</span>
+        <h2>Đánh giá đơn hàng</h2>
+        <p>Chọn số sao:</p>
+        <div class="stars" id="stars">
+          <span class="star" data-value="1">★</span>
+          <span class="star" data-value="2">★</span>
+          <span class="star" data-value="3">★</span>
+          <span class="star" data-value="4">★</span>
+          <span class="star" data-value="5">★</span>
+        </div>
+        <div class="form-group">
+          <label>Nội dung đánh giá (tùy chọn):</label>
+          <textarea
+            id="ratingContent"
+            rows="4"
+            placeholder="Viết cảm nhận của bạn..."
+          ></textarea>
+        </div>
+        <button class="submit-btn" onclick="submitRating()">
+          Gửi đánh giá
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal chi tiết đơn hàng -->
+    <div id="detailModal" class="modal">
+      <div class="modal-content">
+        <span
+          class="close"
+          onclick="document.getElementById('detailModal').style.display='none'"
+          >×</span
+        >
+        <h2>Chi tiết đơn hàng</h2>
+        <p id="detail-loading">Đang tải...</p>
+        <table
+          id="detail-table"
+          style="
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            display: none;
+          "
+        >
+          <thead>
+            <tr>
+              <th>Loại</th>
+              <th>Tên</th>
+              <th>Giá</th>
+              <th>Số lượng</th>
+              <th>Thành tiền</th>
+            </tr>
+          </thead>
+          <tbody id="detail-body"></tbody>
+        </table>
+        <p
+          id="detail-total"
+          style="margin-top: 15px; font-weight: bold; text-align: right"
+        ></p>
+      </div>
+      <!-- Modal chi tiết đơn hàng (thêm vào cuối body, trước </body>) -->
+      <div id="detailModal" class="modal">
+        <div class="modal-content">
+          <span class="close" onclick="closeDetailModal()">×</span>
+          <h2>Chi tiết đơn hàng</h2>
+          <p id="detail-loading">Đang tải...</p>
+          <table
+            id="detail-table"
+            style="
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 20px;
+              display: none;
+            "
+          >
+            <thead>
+              <tr>
+                <th>Loại</th>
+                <th>Tên</th>
+                <th>Giá</th>
+                <th>Số lượng</th>
+                <th>Thành tiền</th>
+              </tr>
+            </thead>
+            <tbody id="detail-body"></tbody>
+          </table>
+          <p
+            id="order-total"
+            style="margin-top: 15px; font-weight: bold; text-align: right"
+          ></p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function loadUser() {
+        const userArea = document.getElementById("user-area");
+        const user = localStorage.getItem("user");
+
+        if (!user) {
+          userArea.innerHTML = `
+        <a href="login.html" style="color: yellow;">Đăng nhập</a>
+      `;
+          return;
+        }
+
+        const u = JSON.parse(user);
+        const name = u.hoTen || u.username || u.ten || null;
+
+        if (name) {
+          userArea.innerHTML = `
+        Xin chào, <b>${name}</b> |
+        <a href="#" onclick="logout()" style="color: yellow;">Đăng xuất</a>
+      `;
+        }
+      }
+
+      function logout() {
+        localStorage.removeItem("user");
+        alert("Đã đăng xuất!");
+        loadUser();
+      }
+      loadUser();
+
+      async function updateCartCount() {
+        const user = JSON.parse(localStorage.getItem("user"));
+        const cartCount = document.getElementById("cart-count");
+
+        if (!user) {
+          cartCount.innerText = 0;
+          return;
+        }
+
+        try {
+          const res = await fetch(
+            `${window.API_BASE}/api/giohang/user/${user.maNguoiDung}`
+          );
+
+          if (!res.ok) throw new Error("Không lấy được giỏ hàng");
+
+          const data = await res.json();
+
+          // data.chiTiet là danh sách sp trong giỏ
+          const total = data.chiTiet.reduce(
+            (sum, item) => sum + item.SoLuong,
+            0
+          );
+
+          cartCount.innerText = total;
+        } catch (err) {
+          console.error("Lỗi load cart count:", err);
+          cartCount.innerText = 0;
+        }
+      }
+
+      // Gọi khi tải trang
+      updateCartCount();
+
+      let currentRatingOrder = null;
+      let selectedStars = 0;
+
+      async function loadHistory() {
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (!user) {
+          document.querySelector("#history-table tbody").innerHTML =
+            '<tr><td colspan="5">Bạn chưa đăng nhập</td></tr>';
+          return;
+        }
+
+        const MaUser = user.MaUser;
+
+        try {
+          const res = await fetch(window.API_BASE + "/api/donhang");
+          if (!res.ok) throw new Error("Không thể lấy lịch sử");
+          const allOrders = await res.json();
+
+          const history = allOrders.filter(
+            (o) =>
+              o.MaUser === MaUser && ["hoan_thanh", "huy"].includes(o.TrangThai)
+          );
+
+          const tbody = document.querySelector("#history-table tbody");
+          tbody.innerHTML = "";
+
+          if (history.length === 0) {
+            tbody.innerHTML =
+              '<tr><td colspan="5">Bạn chưa có đơn hàng nào hoàn thành hoặc bị hủy</td></tr>';
+            return;
+          }
+
+          history.forEach(async (order) => {
+            const statusText =
+              order.TrangThai === "hoan_thanh" ? "Hoàn thành" : "Đã hủy";
+
+            let action = `
+              <button class="btn btn-xem" onclick="openDetailModal('${order.MaDonHang}')">Xem chi tiết</button>
+            `;
+
+            if (order.TrangThai === "hoan_thanh") {
+              // Kiểm tra đã đánh giá (không làm crash nếu API lỗi)
+              let hasRated = false;
+              try {
+                const resCheck = await fetch(
+                  `${window.API_BASE}/api/danhgia/check/${order.MaDonHang}/${MaUser}`
+                );
+                if (resCheck.ok) {
+                  const data = await resCheck.json();
+                  hasRated = data.alreadyRated;
+                }
+              } catch (checkErr) {
+                console.warn("Không kiểm tra được đánh giá:", checkErr);
+              }
+
+              if (hasRated) {
+                action +=
+                  '<button class="btn btn-da-danhgia" disabled>Đã đánh giá</button>';
+              } else {
+                action += `<button class="btn btn-danhgia" onclick="openRatingModal('${order.MaDonHang}')">Đánh giá</button>`;
+              }
+            }
+
+            tbody.innerHTML += `
+              <tr>
+                <td>${order.MaDonHang}</td>
+                <td>${
+                  order.NgayDat ? new Date(order.NgayDat).toLocaleString() : ""
+                }</td>
+                <td>${Number(order.TongTien).toLocaleString()}₫</td>
+                <td class="status ${order.TrangThai}">${statusText}</td>
+                <td>${action}</td>
+              </tr>
+            `;
+          });
+        } catch (err) {
+          console.error("Lỗi tải lịch sử:", err);
+          document.querySelector("#history-table tbody").innerHTML =
+            '<tr><td colspan="5">Lỗi tải dữ liệu: ' +
+            err.message +
+            "</td></tr>";
+        }
+      }
+
+      // Modal đánh giá (giữ nguyên)
+      function openRatingModal(maDonHang) {
+        currentRatingOrder = maDonHang;
+        selectedStars = 0;
+        document
+          .querySelectorAll(".star")
+          .forEach((s) => s.classList.remove("active"));
+        document.getElementById("ratingContent").value = "";
+        document.getElementById("ratingModal").style.display = "block";
+      }
+
+      function closeRatingModal() {
+        document.getElementById("ratingModal").style.display = "none";
+        currentRatingOrder = null;
+      }
+
+      document.querySelectorAll(".star").forEach((star) => {
+        star.addEventListener("click", () => {
+          selectedStars = parseInt(star.dataset.value);
+          document.querySelectorAll(".star").forEach((s) => {
+            s.classList.toggle(
+              "active",
+              parseInt(s.dataset.value) <= selectedStars
+            );
+          });
+        });
+      });
+
+      async function submitRating() {
+        if (selectedStars === 0) return alert("Vui lòng chọn số sao!");
+        const noiDung = document.getElementById("ratingContent").value.trim();
+
+        try {
+          const user = JSON.parse(localStorage.getItem("user"));
+          const res = await fetch(window.API_BASE + "/api/danhgia", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              MaDonHang: currentRatingOrder,
+              MaUser: user.MaUser,
+              SoSao: selectedStars,
+              NoiDung: noiDung,
+            }),
+          });
+
+          if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.message || "Gửi đánh giá thất bại");
+          }
+
+          alert("Cảm ơn đánh giá của bạn!");
+          closeRatingModal();
+          loadHistory();
+        } catch (err) {
+          alert("Lỗi: " + err.message);
+        }
+      }
+
+      // Mở modal chi tiết
+      function openDetailModal(maDonHang) {
+        document.getElementById("detailModal").style.display = "block";
+        loadDetail(maDonHang);
+      }
+
+      // Đóng modal chi tiết
+      function closeDetailModal() {
+        document.getElementById("detailModal").style.display = "none";
+      }
+
+      // Tải chi tiết đơn hàng
+      async function loadDetail(maDonHang) {
+        try {
+          document.getElementById("detail-loading").style.display = "block";
+          document.getElementById("detail-table").style.display = "none";
+
+          const res = await fetch(
+            `${window.API_BASE}/api/donhangchitiet/donhang/${maDonHang}`
+          );
+          if (!res.ok) throw new Error("Lỗi lấy chi tiết đơn hàng");
+          const items = await res.json();
+
+          const tbody = document.getElementById("detail-body");
+          tbody.innerHTML = "";
+
+          let total = 0;
+          items.forEach((item) => {
+            const ten = item.TenSanPham || item.TenCombo || "Sản phẩm";
+            const loai = item.LoaiSanPham || "Khác";
+            const thanhTien = item.ThanhTien || item.DonGia * item.SoLuong;
+            total += thanhTien;
+
+            tbody.innerHTML += `
+        <tr>
+          <td>${loai}</td>
+          <td>${ten}</td>
+          <td>${Number(item.DonGia).toLocaleString()}₫</td>
+          <td>${item.SoLuong}</td>
+          <td>${Number(thanhTien).toLocaleString()}₫</td>
+        </tr>
+      `;
+          });
+
+          document.getElementById(
+            "order-total"
+          ).innerHTML = `Tổng tiền: ${Number(total).toLocaleString()}₫`;
+          document.getElementById("detail-loading").style.display = "none";
+          document.getElementById("detail-table").style.display = "table";
+        } catch (err) {
+          document.getElementById(
+            "detail-loading"
+          ).innerHTML = `Lỗi: ${err.message}`;
+        }
+      }
+      loadHistory();
+    </script>
+  </body>
+</html>

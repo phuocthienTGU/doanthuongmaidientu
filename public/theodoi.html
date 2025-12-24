@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Theo dõi đơn hàng - Jollibee Clone</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #fff7f7;
+        margin: 0;
+      }
+      header {
+        background: #d6001c;
+        padding: 15px 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: white;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+      }
+      header .logo {
+        font-size: 28px;
+        font-weight: bold;
+      }
+      header nav a {
+        color: white;
+        margin-left: 25px;
+        text-decoration: none;
+        font-size: 18px;
+        transition: 0.2s;
+      }
+      header nav a:hover {
+        color: #ffe600;
+      }
+      .container {
+        max-width: 1200px;
+        background: white;
+        margin: 30px auto;
+        padding: 25px;
+        border-radius: 16px;
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+      }
+      h2 {
+        color: #b30015;
+        margin-bottom: 15px;
+        font-size: 26px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+        text-align: center;
+      }
+      th {
+        background: #ffe2e4;
+        font-size: 16px;
+      }
+      .status {
+        font-weight: bold;
+      }
+      .status.cho_duyet {
+        color: #d6001c;
+      }
+      .status.da_nhan {
+        color: #0066cc;
+      }
+      .status.dang_giao {
+        color: #ff9900;
+      }
+      .status.hoan_thanh {
+        color: #009900;
+      }
+      .status.da_huy {
+        color: #888;
+        text-decoration: line-through;
+      }
+      button {
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        margin: 2px;
+        transition: 0.2s;
+      }
+      button:hover {
+        opacity: 0.9;
+      }
+      .btn-huy {
+        background: #dc3545;
+        color: white;
+      }
+      .btn-xem {
+        background: #007bff;
+        color: white;
+      }
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+      }
+      .modal-content {
+        background: white;
+        margin: 15% auto;
+        padding: 30px;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      }
+      .close {
+        float: right;
+        font-size: 30px;
+        cursor: pointer;
+        color: #d6001c;
+      }
+      .form-group {
+        margin: 15px 0;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+      }
+      .form-group textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        resize: vertical;
+      }
+      .submit-btn {
+        background: #d6001c;
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        width: 100%;
+        font-size: 16px;
+      }
+      .submit-btn:hover {
+        background: #b30015;
+      }
+
+      /* Status bar (timeline) */
+      .status-bar {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+        margin: 20px 0;
+      }
+      .status-step {
+        text-align: center;
+        flex: 1;
+        position: relative;
+        z-index: 1;
+      }
+      .status-step .circle {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #ddd;
+        margin: 0 auto 10px;
+        line-height: 30px;
+        color: white;
+        font-weight: bold;
+      }
+      .status-step.active .circle {
+        background: #d6001c;
+      }
+      .status-bar::before {
+        content: "";
+        position: absolute;
+        top: 15px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #ddd;
+        z-index: 0;
+      }
+      .status-bar .progress {
+        position: absolute;
+        top: 15px;
+        left: 0;
+        height: 2px;
+        background: #d6001c;
+        z-index: 0;
+      }
+      .detail-table {
+        width: 100%;
+        margin-top: 20px;
+        border-collapse: collapse;
+      }
+      .detail-table th,
+      .detail-table td {
+        border: 1px solid #eee;
+        padding: 10px;
+      }
+      .detail-table th {
+        background: #ffe2e4;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="img-config.js"></script>
+    <header>
+      <div class="logo">Jollibee Clone</div>
+      <nav>
+        <a href="index.html">Trang chủ</a>
+        <a href="thucdon.html">Thực đơn</a>
+
+        <a href="theodoi.html" style="color: yellow">Theo dõi đơn</a>
+        <a href="lichsu.html">Lịch sử đơn hàng</a>
+
+        <a
+          id="cart-btn"
+          href="giohang.html"
+          style="
+            background: yellow;
+            padding: 6px 12px;
+            border-radius: 6px;
+            color: black !important;
+            font-weight: bold;
+            margin-left: 15px;
+          "
+        >
+          🛒 Giỏ hàng (<span id="cart-count">0</span>)
+        </a>
+
+        <!-- Khu đăng nhập -->
+        <span id="user-area" style="margin-left: 20px; font-size: 18px">
+          <!-- nội dung sẽ tự thay đổi bằng JavaScript -->
+        </span>
+      </nav>
+    </header>
+
+    <div class="container">
+      <h2>Đơn hàng đang xử lý</h2>
+
+      <div style="margin-bottom: 20px">
+        <label><b>Lọc theo trạng thái:</b></label>
+        <select
+          id="status-filter"
+          style="padding: 6px 12px; border-radius: 6px; margin-left: 10px"
+        >
+          <option value="all">Tất cả</option>
+          <option value="cho_duyet">Chờ duyệt</option>
+          <option value="da_nhan">Đã nhận</option>
+          <option value="dang_giao">Đang giao</option>
+        </select>
+      </div>
+
+      <table id="orders-table">
+        <thead>
+          <tr>
+            <th>Mã đơn</th>
+            <th>Ngày đặt</th>
+            <th>Tổng tiền</th>
+            <th>Hình thức</th>
+            <th>Trạng thái</th>
+            <th>Nhân viên</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Modal hủy đơn + lý do -->
+    <div id="cancelModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeCancelModal()">&times;</span>
+        <h2>Hủy đơn hàng</h2>
+        <p>Vui lòng nhập lý do hủy:</p>
+        <div class="form-group">
+          <textarea
+            id="lyDoHuy"
+            rows="4"
+            placeholder="Lý do hủy đơn…"
+          ></textarea>
+        </div>
+        <button class="submit-btn" onclick="confirmCancel()">
+          Xác nhận hủy
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal chi tiết đơn hàng -->
+    <div id="detailModal" class="modal">
+      <div class="modal-content" style="max-width: 700px">
+        <span class="close" onclick="closeDetailModal()">&times;</span>
+        <h2>Chi tiết đơn hàng</h2>
+        <div id="order-status-bar"></div>
+        <table class="detail-table">
+          <thead>
+            <tr>
+              <th>Loại</th>
+              <th>Tên</th>
+              <th>Giá</th>
+              <th>Số lượng</th>
+              <th>Thành tiền</th>
+            </tr>
+          </thead>
+          <tbody id="detail-body"></tbody>
+        </table>
+        <p
+          id="order-total"
+          style="margin-top: 20px; font-weight: bold; text-align: right"
+        ></p>
+      </div>
+    </div>
+
+    <script>
+      function loadUser() {
+        const userArea = document.getElementById("user-area");
+        const user = localStorage.getItem("user");
+
+        if (!user) {
+          userArea.innerHTML = `
+        <a href="login.html" style="color: yellow;">Đăng nhập</a>
+      `;
+          return;
+        }
+
+        const u = JSON.parse(user);
+        const name = u.hoTen || u.username || u.ten || null;
+
+        if (name) {
+          userArea.innerHTML = `
+        Xin chào, <b>${name}</b> |
+        <a href="#" onclick="logout()" style="color: yellow;">Đăng xuất</a>
+      `;
+        }
+      }
+
+      function logout() {
+        localStorage.removeItem("user");
+        alert("Đã đăng xuất!");
+        loadUser();
+      }
+      loadUser();
+
+      async function updateCartCount() {
+        const user = JSON.parse(localStorage.getItem("user"));
+        const cartCount = document.getElementById("cart-count");
+
+        if (!user) {
+          cartCount.innerText = 0;
+          return;
+        }
+
+        try {
+          const res = await fetch(
+            `${window.API_BASE}/api/giohang/user/${user.maNguoiDung}`
+          );
+
+          if (!res.ok) throw new Error("Không lấy được giỏ hàng");
+
+          const data = await res.json();
+
+          // data.chiTiet là danh sách sp trong giỏ
+          const total = data.chiTiet.reduce(
+            (sum, item) => sum + item.SoLuong,
+            0
+          );
+
+          cartCount.innerText = total;
+        } catch (err) {
+          console.error("Lỗi load cart count:", err);
+          cartCount.innerText = 0;
+        }
+      }
+
+      // Gọi khi tải trang
+      updateCartCount();
+
+      let currentCancelOrder = null;
+
+      async function loadOrders() {
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (!user) {
+          document.querySelector("#orders-table tbody").innerHTML =
+            '<tr><td colspan="7">Bạn chưa đăng nhập</td></tr>';
+          return;
+        }
+
+        const MaUser = user.MaUser; // hoặc user.maNguoiDung tùy backend
+
+        try {
+          const res = await fetch(window.API_BASE + "/api/donhang");
+          if (!res.ok) throw new Error("Không thể lấy đơn hàng");
+          const allOrders = await res.json();
+          let orders = allOrders.filter((o) => o.MaUser === MaUser);
+
+          // Lọc theo trạng thái
+          const status = document.getElementById("status-filter").value;
+          const validStatuses = ["cho_duyet", "da_nhan", "dang_giao"];
+          if (status !== "all") {
+            orders = orders.filter((o) => o.TrangThai === status);
+          } else {
+            orders = orders.filter((o) => validStatuses.includes(o.TrangThai));
+          }
+
+          const tbody = document.querySelector("#orders-table tbody");
+          tbody.innerHTML = "";
+
+          if (orders.length === 0) {
+            tbody.innerHTML =
+              '<tr><td colspan="7">Không có đơn hàng nào đang xử lý</td></tr>';
+            return;
+          }
+
+          for (const order of orders) {
+            // Xử lý thông tin nhân viên
+            let nhanVien = "Chưa nhận";
+
+            if (order.MaNhanVien) {
+              try {
+                const resNV = await fetch(
+                  `${window.API_BASE}/api/auth/user/${order.MaNhanVien}`
+                );
+                if (resNV.ok) {
+                  const nv = await resNV.json();
+                  const hoTen = nv.HoTen || "Nhân viên";
+                  const sdt = nv.DienThoai || "Chưa có SĐT";
+                  nhanVien = `${hoTen} (${sdt})`;
+                } else {
+                  nhanVien = "Nhân viên (không tải được)";
+                }
+              } catch (err) {
+                console.error("Lỗi lấy thông tin nhân viên:", err);
+                nhanVien = "Nhân viên (lỗi kết nối)";
+              }
+            }
+            const statusText =
+              {
+                cho_duyet: "Chờ duyệt",
+                da_nhan: "Đã nhận",
+                dang_giao: "Đang giao",
+              }[order.TrangThai] || order.TrangThai;
+
+            tbody.innerHTML += `
+        <tr>
+          <td>${order.MaDonHang}</td>
+          <td>${
+            order.NgayDat ? new Date(order.NgayDat).toLocaleString() : ""
+          }</td>
+          <td>${Number(order.TongTien).toLocaleString()}₫</td>
+          <td>${order.HinhThucThanhToan || ""}</td>
+          <td class="status ${order.TrangThai}">${statusText}</td>
+          <td>${nhanVien}</td>
+          <td>
+            <button class="btn btn-xem" onclick="openDetailModal('${
+              order.MaDonHang
+            }')">Xem chi tiết</button>
+            ${
+              order.TrangThai === "cho_duyet"
+                ? `<button class="btn btn-huy" onclick="openCancelModal('${order.MaDonHang}')">Hủy</button>`
+                : ""
+            }
+          </td>
+        </tr>
+      `;
+          }
+        } catch (error) {
+          console.error(error);
+          document.querySelector("#orders-table tbody").innerHTML =
+            '<tr><td colspan="7">Lỗi tải đơn hàng</td></tr>';
+        }
+      }
+
+      // Modal hủy
+      function openCancelModal(maDonHang) {
+        currentCancelOrder = maDonHang;
+        document.getElementById("cancelModal").style.display = "block";
+        document.getElementById("lyDoHuy").value = "";
+      }
+
+      function closeCancelModal() {
+        document.getElementById("cancelModal").style.display = "none";
+        currentCancelOrder = null;
+      }
+
+      async function confirmCancel() {
+        const lyDo = document.getElementById("lyDoHuy").value.trim();
+        if (!lyDo) return alert("Vui lòng nhập lý do hủy!");
+
+        const user = JSON.parse(localStorage.getItem("user"));
+
+        try {
+          const res = await fetch(
+            `${window.API_BASE}/api/donhang/${currentCancelOrder}`,
+            {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                TrangThai: "huy", // Khớp với enum 'huy' trong DB
+                LyDoHuy: lyDo,
+                // Không cần gửi MaUser nếu backend không kiểm tra
+              }),
+            }
+          );
+
+          if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.message || "Hủy đơn thất bại");
+          }
+
+          alert("Đã hủy đơn hàng!");
+          closeCancelModal();
+          loadOrders();
+        } catch (err) {
+          alert("Lỗi: " + err.message);
+        }
+      }
+
+      // Lọc theo trạng thái
+      document
+        .getElementById("status-filter")
+        .addEventListener("change", loadOrders);
+      loadOrders();
+
+      // Mở modal chi tiết
+      function openDetailModal(maDonHang) {
+        viewOrderDetail(maDonHang);
+        document.getElementById("detailModal").style.display = "block";
+      }
+
+      function closeDetailModal() {
+        document.getElementById("detailModal").style.display = "none";
+      }
+
+      // Xem chi tiết đơn + hiển thị status bar
+      async function viewOrderDetail(maDonHang) {
+        try {
+          const resOrder = await fetch(
+            `${window.API_BASE}/api/donhang/${maDonHang}`
+          );
+          if (!resOrder.ok) throw new Error("Lỗi lấy đơn hàng");
+          const order = await resOrder.json();
+
+          const resChiTiet = await fetch(
+            `${window.API_BASE}/api/donhangchitiet/donhang/${maDonHang}`
+          );
+          if (!resChiTiet.ok) throw new Error("Lỗi lấy chi tiết");
+          const items = await resChiTiet.json();
+
+          // Hiển thị status bar
+          const statusBar = document.getElementById("order-status-bar");
+          statusBar.innerHTML = getStatusBar(order.TrangThai);
+
+          // Hiển thị chi tiết sản phẩm/combo
+          const tbody = document.getElementById("detail-body");
+          tbody.innerHTML = "";
+          items.forEach((item) => {
+            const ten = item.TenSanPham || item.TenCombo || "Sản phẩm";
+            const loai = item.LoaiSanPham || "Khác";
+            tbody.innerHTML += `
+              <tr>
+                <td>${loai}</td>
+                <td>${ten}</td>
+                <td>${Number(item.DonGia).toLocaleString()}₫</td>
+                <td>${item.SoLuong}</td>
+                <td>${Number(item.ThanhTien).toLocaleString()}₫</td>
+              </tr>
+            `;
+          });
+
+          document.getElementById(
+            "order-total"
+          ).innerHTML = `Tổng tiền: ${Number(
+            order.TongTien
+          ).toLocaleString()}₫`;
+        } catch (err) {
+          alert("Lỗi: " + err.message);
+        }
+      }
+
+      // Hàm tạo status bar (timeline)
+      function getStatusBar(trangThai) {
+        const steps = ["cho_duyet", "da_nhan", "dang_giao", "hoan_thanh"];
+        const labels = ["Chờ duyệt", "Đã nhận", "Đang giao", "Hoàn thành"];
+        let html = '<div class="status-bar">';
+        let progressWidth = 0;
+
+        steps.forEach((step, index) => {
+          const isActive = steps.indexOf(trangThai) >= index;
+          if (isActive) progressWidth = (index / (steps.length - 1)) * 100;
+          html += `
+            <div class="status-step ${isActive ? "active" : ""}">
+              <div class="circle">${index + 1}</div>
+              <p>${labels[index]}</p>
+            </div>
+          `;
+        });
+
+        html +=
+          '<div class="progress" style="width: ' + progressWidth + '%"></div>';
+        html += "</div>";
+        return html;
+      }
+    </script>
+  </body>
+</html>

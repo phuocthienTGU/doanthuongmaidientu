@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng ký</title>
+    <style>
+      body {
+        font-family: Arial;
+        background: #fff3f3;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+
+      .signup-box {
+        width: 420px;
+        background: #fff;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      }
+
+      h2 {
+        text-align: center;
+        color: #d60000;
+        margin-bottom: 20px;
+        font-size: 26px;
+      }
+
+      input,
+      select {
+        width: 95%;
+        padding: 12px;
+        margin: 8px 0;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 16px;
+      }
+
+      button {
+        width: 100%;
+        padding: 12px;
+        margin-top: 15px;
+        background: #ff0000;
+        border: none;
+        color: #fff;
+        font-size: 18px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #cc0000;
+      }
+
+      a {
+        text-decoration: none;
+        color: #d60000;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="img-config.js"></script>
+    <div class="signup-box">
+      <h2>Đăng ký tài khoản</h2>
+
+      <form id="signupForm">
+        <input
+          type="text"
+          id="taiKhoan"
+          name="taiKhoan"
+          placeholder="Tài khoản"
+          required
+        />
+        <input
+          type="password"
+          id="matKhau"
+          name="matKhau"
+          placeholder="Mật khẩu"
+          required
+        />
+        <input
+          type="text"
+          id="hoTen"
+          name="hoTen"
+          placeholder="Họ tên"
+          required
+        />
+        <input type="email" id="email" name="email" placeholder="Email" />
+        <input
+          type="text"
+          id="dienThoai"
+          name="dienThoai"
+          placeholder="Điện thoại"
+        />
+
+        <h4 style="color: #d60000; margin-top: 15px">Xã/Phường</h4>
+        <select id="xa" name="xa" required>
+          <option value="">Chọn xã/phường</option>
+        </select>
+
+        <select id="vaiTro" name="vaiTro">
+          <option value="khachhang">Khách hàng</option>
+          <!--<option value="nhanvien">Nhân viên</option>
+          <option value="admin">Admin</option>-->
+        </select>
+
+        <button type="submit">Đăng ký</button>
+      </form>
+
+      <p style="text-align: center">
+        Đã có tài khoản? <a href="login.html">Đăng nhập</a>
+      </p>
+    </div>
+
+    <script>
+      async function loadXa() {
+        try {
+          const res = await fetch(window.API_BASE + "/api/xa");
+          const xas = await res.json();
+          const select = document.getElementById("xa");
+          xas.forEach((x) => {
+            select.innerHTML += `<option value="${x.MaXa}">${x.TenXa}</option>`;
+          });
+        } catch (err) {
+          console.error("Lỗi load xã");
+        }
+      }
+      loadXa();
+
+      const form = document.getElementById("signupForm");
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const maXa = form.xa.value;
+        const tenXa =
+          document.getElementById("xa").options[
+            document.getElementById("xa").selectedIndex
+          ].text;
+
+        const data = {
+          TaiKhoan: form.taiKhoan.value.trim(),
+          MatKhau: form.matKhau.value,
+          HoTen: form.hoTen.value.trim(),
+          Email: form.email.value.trim(),
+          DienThoai: form.dienThoai.value.trim(),
+          MaXa: maXa || null, // Lưu mã xã
+          VaiTro: form.vaiTro.value,
+        };
+
+        if (!data.TaiKhoan || !data.MatKhau || !data.HoTen || !data.MaXa) {
+          alert(
+            "Vui lòng điền đầy đủ thông tin bắt buộc (bao gồm chọn xã/phường)!"
+          );
+          return;
+        }
+
+        try {
+          const res = await fetch(window.API_BASE + "/auth/signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+
+          const result = await res.json();
+
+          if (res.ok) {
+            alert(result.message || "Đăng ký thành công!");
+            window.location.href = "login.html";
+            form.reset();
+          } else {
+            alert(result.message || "Lỗi khi đăng ký!");
+          }
+        } catch (error) {
+          alert("Lỗi mạng hoặc server!");
+          console.error(error);
+        }
+      });
+    </script>
+  </body>
+</html>

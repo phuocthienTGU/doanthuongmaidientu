@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản lý Sản phẩm</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f5f5f5;
+        margin: 0;
+      }
+      header {
+        background: #d6001c;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        font-size: 24px;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 20px auto;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 12px;
+        text-align: center;
+      }
+      th {
+        background: #d6001c;
+        color: white;
+      }
+      .btn {
+        padding: 8px 12px;
+        margin: 0 5px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .btn-add {
+        background: #28a745;
+        color: white;
+      }
+      .btn-edit {
+        background: #ffc107;
+        color: black;
+      }
+      .btn-delete {
+        background: #dc3545;
+        color: white;
+      }
+      .form-group {
+        margin: 15px 0;
+      }
+      input,
+      select {
+        padding: 8px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      #modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+      .modal-content {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        width: 550px;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+      #dropZone {
+        border: 2px dashed #ccc;
+        padding: 30px;
+        text-align: center;
+        margin: 10px 0;
+        border-radius: 8px;
+        background: #fafafa;
+        transition: 0.3s;
+      }
+      #dropZone.dragover {
+        border-color: #d6001c;
+        background: #fff0f0;
+      }
+      #currentImage {
+        max-width: 100%;
+        max-height: 200px;
+        margin: 10px 0;
+        border-radius: 8px;
+        display: none;
+      }
+      #uploadStatus {
+        margin-top: 10px;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <header>QUẢN LÝ SẢN PHẨM</header>
+    <script src="img-config.js"></script>
+    <div class="container">
+      <button class="btn btn-add" onclick="openAddForm()">
+        + Thêm sản phẩm
+      </button>
+      <a
+        href="admin.html"
+        style="float: right; color: #d6001c; text-decoration: none"
+        >← Quay lại</a
+      >
+
+      <table id="productTable">
+        <thead>
+          <tr>
+            <th>Mã</th>
+            <th>Tên sản phẩm</th>
+            <th>Danh mục</th>
+            <th>Giá</th>
+            <th>Hình ảnh</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Modal thêm/sửa -->
+    <div id="modal">
+      <div class="modal-content">
+        <h3 id="formTitle">Thêm sản phẩm mới</h3>
+
+        <div class="form-group">
+          <label>Danh mục</label>
+          <select id="MaDanhMuc"></select>
+        </div>
+
+        <div class="form-group">
+          <label>Tên sản phẩm</label>
+          <input id="TenSanPham" placeholder="VD: Gà Rán 1 Miếng" />
+        </div>
+
+        <div class="form-group">
+          <label>Mô tả</label>
+          <input id="MoTa" placeholder="Mô tả ngắn về món ăn" />
+        </div>
+
+        <div class="form-group">
+          <label>Giá (₫)</label>
+          <input id="Gia" type="number" placeholder="35000" />
+        </div>
+
+        <!-- Phần upload ảnh mới -->
+        <div class="form-group">
+          <label>Ảnh hiện tại</label><br />
+          <img id="currentImage" alt="Ảnh hiện tại" />
+        </div>
+
+        <div class="form-group">
+          <label>Upload ảnh mới</label>
+          <input type="file" id="uploadImage" accept="image/*" />
+          <div id="dropZone">Kéo & thả ảnh vào đây hoặc click để chọn</div>
+          <p id="uploadStatus"></p>
+        </div>
+
+        <div class="form-group">
+          <label>Tên file ảnh (tự động)</label>
+          <input
+            id="HinhAnh"
+            readonly
+            placeholder="Sẽ tự động điền sau khi upload"
+          />
+        </div>
+
+        <button class="btn btn-add" onclick="saveProduct()">Lưu</button>
+        <button
+          class="btn"
+          onclick="closeForm()"
+          style="background: #ccc; margin-left: 10px"
+        >
+          Hủy
+        </button>
+      </div>
+    </div>
+
+    <script>
+      const API = `${window.API_BASE}/api/sanpham`;
+      let editingId = null;
+      let uploadedFilename = ""; // Lưu tên file sau khi upload
+
+      // Load sản phẩm
+      async function loadProducts() {
+        try {
+          const res = await fetch(API);
+          if (!res.ok) throw new Error("Lỗi tải sản phẩm");
+          const data = await res.json();
+          const tbody = document.querySelector("#productTable tbody");
+          tbody.innerHTML = "";
+
+          data.forEach((p) => {
+            const imgSrc = p.HinhAnh
+              ? `${window.IMG_BASE}/${p.HinhAnh}`
+              : `${window.IMG_BASE}/ga-ran-1.jpg`;
+            tbody.innerHTML += `
+              <tr>
+                <td>${p.MaSanPham}</td>
+                <td>${p.TenSanPham}</td>
+                <td>${p.MaDanhMuc}</td>
+                <td>${Number(p.Gia).toLocaleString()}₫</td>
+                <td><img src="${imgSrc}" width="80" alt="${
+              p.TenSanPham
+            }" onerror="this.src=window.IMG_BASE+'/ga-ran-1.jpg'" /></td>
+                <td>
+                  <button class="btn btn-edit" onclick="editProduct('${
+                    p.MaSanPham
+                  }')">Sửa</button>
+                  <button class="btn btn-delete" onclick="deleteProduct('${
+                    p.MaSanPham
+                  }')">Xóa</button>
+                </td>
+              </tr>
+            `;
+          });
+        } catch (err) {
+          alert("Lỗi: " + err.message);
+        }
+      }
+
+      // Xóa sản phẩm (ẩn mềm)
+      async function deleteProduct(maSP) {
+        if (!confirm("Xóa sản phẩm này? Hành động không thể hoàn tác.")) return;
+        try {
+          const res = await fetch(`${API}/${maSP}`, { method: "DELETE" });
+          if (!res.ok) {
+            const err = await res
+              .json()
+              .catch(() => ({ message: "Lỗi server" }));
+            throw new Error(err.message || "Lỗi xóa sản phẩm");
+          }
+          alert("Xóa sản phẩm thành công");
+          loadProducts();
+        } catch (e) {
+          alert("Lỗi xóa: " + e.message);
+        }
+      }
+
+      // Load danh mục
+      async function loadDanhMuc() {
+        try {
+          const res = await fetch(`${window.API_BASE}/api/danhmuc`);
+          const data = await res.json();
+          const select = document.getElementById("MaDanhMuc");
+          select.innerHTML =
+            '<option value="">Chọn danh mục</option>' +
+            data
+              .map(
+                (d) => `<option value="${d.MaDanhMuc}">${d.TenDanhMuc}</option>`
+              )
+              .join("");
+        } catch (err) {
+          alert("Lỗi tải danh mục");
+        }
+      }
+
+      // Upload ảnh
+      const dropZone = document.getElementById("dropZone");
+      const uploadImage = document.getElementById("uploadImage");
+      const uploadStatus = document.getElementById("uploadStatus");
+      const currentImage = document.getElementById("currentImage");
+
+      dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZone.classList.add("dragover");
+      });
+
+      dropZone.addEventListener("dragleave", () => {
+        dropZone.classList.remove("dragover");
+      });
+
+      dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropZone.classList.remove("dragover");
+        if (e.dataTransfer.files.length) {
+          uploadFile(e.dataTransfer.files[0]);
+        }
+      });
+
+      uploadImage.addEventListener("change", (e) => {
+        if (e.target.files.length) {
+          uploadFile(e.target.files[0]);
+        }
+      });
+
+      async function uploadFile(file) {
+        if (!file.type.startsWith("image/")) {
+          uploadStatus.textContent = "❌ Chỉ chấp nhận file ảnh!";
+          uploadStatus.style.color = "red";
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("hinhanh", file);
+
+        uploadStatus.textContent = "Đang upload...";
+        uploadStatus.style.color = "#d6001c";
+
+        try {
+          const res = await fetch(`${window.API_BASE}/api/upload`, {
+            method: "POST",
+            body: formData,
+          });
+
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || "Upload thất bại");
+
+          uploadedFilename = data.filename;
+          document.getElementById("HinhAnh").value = uploadedFilename;
+          uploadStatus.textContent = `✅ Upload thành công: ${uploadedFilename}`;
+          uploadStatus.style.color = "green";
+
+          // Preview ảnh mới
+          currentImage.src = `${window.IMG_BASE}/${uploadedFilename}`;
+          currentImage.style.display = "block";
+        } catch (err) {
+          uploadStatus.textContent = "❌ " + err.message;
+          uploadStatus.style.color = "red";
+        }
+      }
+
+      // Sửa sản phẩm
+      async function editProduct(maSP) {
+        try {
+          const res = await fetch(`${API}/${maSP}`);
+          const p = await res.json();
+          editingId = maSP;
+
+          document.getElementById("formTitle").textContent = "Sửa sản phẩm";
+          document.getElementById("MaDanhMuc").value = p.MaDanhMuc;
+          document.getElementById("TenSanPham").value = p.TenSanPham;
+          document.getElementById("MoTa").value = p.MoTa || "";
+          document.getElementById("Gia").value = p.Gia;
+          document.getElementById("HinhAnh").value = p.HinhAnh || "";
+
+          // Hiển thị ảnh hiện tại
+          if (p.HinhAnh) {
+            currentImage.src = `${window.IMG_BASE}/${p.HinhAnh}`;
+            currentImage.style.display = "block";
+            uploadedFilename = p.HinhAnh; // Giữ nguyên nếu không upload mới
+          } else {
+            currentImage.style.display = "none";
+            uploadedFilename = "";
+          }
+
+          document.getElementById("modal").style.display = "flex";
+        } catch (err) {
+          alert("Lỗi tải sản phẩm");
+        }
+      }
+
+      // Lưu sản phẩm
+      async function saveProduct() {
+        const payload = {
+          MaDanhMuc: document.getElementById("MaDanhMuc").value,
+          TenSanPham: document.getElementById("TenSanPham").value.trim(),
+          MoTa: document.getElementById("MoTa").value.trim(),
+          Gia: parseInt(document.getElementById("Gia").value),
+          HinhAnh:
+            uploadedFilename || document.getElementById("HinhAnh").value.trim(),
+        };
+
+        if (!payload.MaDanhMuc || !payload.TenSanPham || !payload.Gia) {
+          alert("Vui lòng điền đầy đủ: Danh mục, Tên, Giá!");
+          return;
+        }
+
+        try {
+          let res;
+          if (editingId) {
+            res = await fetch(`${API}/${editingId}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+            alert("Sửa thành công!");
+          } else {
+            res = await fetch(API, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            });
+            alert("Thêm thành công!");
+          }
+
+          if (!res.ok) throw new Error("Lưu thất bại");
+          closeForm();
+          loadProducts();
+        } catch (err) {
+          alert("Lỗi: " + err.message);
+        }
+      }
+
+      function openAddForm() {
+        editingId = null;
+        uploadedFilename = "";
+        document.getElementById("formTitle").textContent = "Thêm sản phẩm mới";
+        document.getElementById("MaDanhMuc").value = "";
+        document.getElementById("TenSanPham").value = "";
+        document.getElementById("MoTa").value = "";
+        document.getElementById("Gia").value = "";
+        document.getElementById("HinhAnh").value = "";
+        currentImage.style.display = "none";
+        uploadStatus.textContent = "";
+        document.getElementById("modal").style.display = "flex";
+      }
+
+      function closeForm() {
+        document.getElementById("modal").style.display = "none";
+      }
+
+      // Load khi mở trang
+      loadProducts();
+      loadDanhMuc();
+    </script>
+  </body>
+</html>

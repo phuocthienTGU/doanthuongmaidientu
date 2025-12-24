@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản Lý Khuyến Mãi - Admin Jollibee Clone</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Arial", sans-serif;
+      }
+      body {
+        background-color: #f8f8f8;
+        color: #333;
+      }
+      header {
+        background: #d6001c;
+        padding: 15px 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: white;
+      }
+      header .logo {
+        font-size: 28px;
+        font-weight: bold;
+      }
+      header nav a {
+        color: white;
+        margin-left: 25px;
+        text-decoration: none;
+        font-size: 18px;
+      }
+      .container {
+        max-width: 1400px;
+        margin: 30px auto;
+        padding: 0 20px;
+      }
+      h1 {
+        color: #d6001c;
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 36px;
+      }
+      .section-title {
+        color: #d6001c;
+        font-size: 28px;
+        margin: 30px 0 20px;
+        text-align: center;
+        position: relative;
+      }
+      .section-title:after {
+        content: "";
+        position: absolute;
+        bottom: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 4px;
+        background: #d6001c;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      th,
+      td {
+        padding: 15px;
+        text-align: center;
+        border-bottom: 1px solid #ddd;
+      }
+      th {
+        background: #d6001c;
+        color: white;
+        font-weight: bold;
+      }
+      tr:hover {
+        background: #fff5f5;
+      }
+      .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s;
+      }
+      .btn-add {
+        background: #28a745;
+        color: white;
+        margin-bottom: 20px;
+        display: inline-block;
+      }
+      .btn-add:hover {
+        background: #218838;
+        transform: scale(1.05);
+      }
+      .btn-edit {
+        background: #007bff;
+        color: white;
+      }
+      .btn-edit:hover {
+        background: #0069d9;
+      }
+      .btn-delete {
+        background: #dc3545;
+        color: white;
+      }
+      .btn-delete:hover {
+        background: #c82333;
+      }
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+      }
+      .modal-content {
+        background: white;
+        margin: 10% auto;
+        padding: 30px;
+        border-radius: 15px;
+        width: 90%;
+        max-width: 600px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      }
+      .close {
+        position: absolute;
+        right: 25px;
+        top: 15px;
+        font-size: 36px;
+        cursor: pointer;
+        color: #d6001c;
+      }
+      .form-group {
+        margin-bottom: 20px;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #333;
+      }
+      .form-group input,
+      .form-group textarea,
+      .form-group select {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 16px;
+      }
+      .form-group input:focus,
+      .form-group textarea:focus {
+        border-color: #d6001c;
+        outline: none;
+        box-shadow: 0 0 5px rgba(214, 0, 28, 0.3);
+      }
+      .submit-btn {
+        background: #d6001c;
+        color: white;
+        border: none;
+        padding: 14px 30px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 18px;
+        width: 100%;
+        margin-top: 20px;
+        transition: background 0.3s;
+      }
+      .submit-btn:hover {
+        background: #b30015;
+      }
+      .empty {
+        text-align: center;
+        color: #666;
+        padding: 50px;
+        font-size: 20px;
+      }
+      @media (max-width: 768px) {
+        table {
+          font-size: 14px;
+        }
+        th,
+        td {
+          padding: 10px;
+        }
+        .modal-content {
+          padding: 20px;
+          margin: 15% auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <script src="img-config.js"></script>
+    <!-- HEADER -->
+    <header>
+      <div class="logo">Admin Jollibee Clone</div>
+      <nav>
+        <a href="admin-dashboard.html">Dashboard</a>
+        <a href="admin-sanpham.html">Sản phẩm</a>
+        <a href="admin-khuyenmai.html" style="color: yellow">Khuyến mãi</a>
+        <a href="admin-donhang.html">Đơn hàng</a>
+        <a href="#" onclick="logout()">Đăng xuất</a>
+      </nav>
+    </header>
+
+    <div class="container">
+      <h1>QUẢN LÝ KHUYẾN MÃI</h1>
+
+      <button class="btn btn-add" onclick="openAddModal()">
+        <i class="fas fa-plus"></i> Thêm Mã Giảm Giá Mới
+      </button>
+
+      <div class="section-title">Danh Sách Mã Giảm Giá</div>
+      <table id="promoTable">
+        <thead>
+          <tr>
+            <th>Mã Giảm Giá</th>
+            <th>Phần Trăm Giảm</th>
+            <th>Ngày Bắt Đầu</th>
+            <th>Ngày Hết Hạn</th>
+            <th>Trạng Thái</th>
+            <th>Hành Động</th>
+          </tr>
+        </thead>
+        <tbody id="promoBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Modal Thêm / Sửa -->
+    <div id="promoModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2 id="modalTitle">Thêm Mã Giảm Giá Mới</h2>
+        <form id="promoForm">
+          <div class="form-group">
+            <label for="maGiamGia">Mã Giảm Giá:</label>
+            <input
+              type="text"
+              id="maGiamGia"
+              required
+              placeholder="Ví dụ: SALE20"
+            />
+          </div>
+          <div class="form-group">
+            <label for="phanTram">Phần Trăm Giảm (%):</label>
+            <input type="number" id="phanTram" min="1" max="100" required />
+          </div>
+          <div class="form-group">
+            <label for="ngayBatDau">Ngày Bắt Đầu:</label>
+            <input type="date" id="ngayBatDau" required />
+          </div>
+          <div class="form-group">
+            <label for="ngayHetHan">Ngày Hết Hạn:</label>
+            <input type="date" id="ngayHetHan" required />
+          </div>
+          <div class="form-group">
+            <label for="moTa">Mô Tả:</label>
+            <textarea
+              id="moTa"
+              rows="3"
+              placeholder="Mô tả khuyến mãi..."
+            ></textarea>
+          </div>
+          <button type="submit" class="submit-btn">Lưu</button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      const API_GIAMGIA = window.API_BASE + "/api/giamgia";
+
+      // Kiểm tra quyền Admin
+      document.addEventListener("DOMContentLoaded", () => {
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        if (user.vaiTro !== "admin") {
+          alert("Bạn không có quyền truy cập trang Admin!");
+          window.location.href = "index.html";
+        }
+        loadPromotions();
+      });
+
+      // Xóa / Hiển thị lại (toggle trạng thái)
+      async function toggleStatus(ma, currentStatus) {
+        const action = currentStatus === "hienthi" ? "ẩn" : "hiển thị lại";
+        if (!confirm(`Bạn chắc chắn muốn ${action} mã giảm giá này?`)) return;
+
+        try {
+          const res = await fetch(`${API_GIAMGIA}/${ma}/toggle-status`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+          });
+
+          if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.message || "Lỗi thay đổi trạng thái");
+          }
+
+          const data = await res.json();
+          alert(data.message);
+          loadPromotions(); // Reload danh sách
+        } catch (err) {
+          alert("Lỗi: " + err.message);
+        }
+      }
+
+      // Load danh sách khuyến mãi (sửa cột Hành Động)
+      async function loadPromotions() {
+        try {
+          const res = await fetch(API_GIAMGIA);
+          if (!res.ok) throw new Error("Lỗi tải khuyến mãi");
+          const data = await res.json();
+
+          const tbody = document.getElementById("promoBody");
+          tbody.innerHTML = "";
+
+          if (data.length === 0) {
+            tbody.innerHTML =
+              '<tr><td colspan="6" class="empty">Chưa có mã giảm giá nào</td></tr>';
+            return;
+          }
+
+          data.forEach((g) => {
+            const row = document.createElement("tr");
+            const statusText = g.TrangThai === "hienthi" ? "Hiển thị" : "Ẩn";
+            const statusColor = g.TrangThai === "hienthi" ? "green" : "gray";
+            const btnText = g.TrangThai === "hienthi" ? "Ẩn" : "Hiển thị lại";
+            const btnClass =
+              g.TrangThai === "hienthi" ? "btn-delete" : "btn-edit";
+
+            row.innerHTML = `
+        <td>${g.MaGiamGia}</td>
+        <td>${g.PhanTram}%</td>
+        <td>${new Date(g.NgayBatDau).toLocaleDateString()}</td>
+        <td>${new Date(g.NgayHetHan).toLocaleDateString()}</td>
+        <td><span style="color:${statusColor}">${statusText}</span></td>
+        <td>
+          <button class="btn btn-edit" onclick="openEditModal('${
+            g.MaGiamGia
+          }', ${g.PhanTram}, '${g.NgayBatDau}', '${g.NgayHetHan}', '${
+              g.MoTa || ""
+            }')">Sửa</button>
+          <button class="btn ${btnClass}" onclick="toggleStatus('${
+              g.MaGiamGia
+            }', '${g.TrangThai}')">${btnText}</button>
+        </td>
+      `;
+            tbody.appendChild(row);
+          });
+        } catch (err) {
+          console.error(err);
+          document.getElementById(
+            "promoBody"
+          ).innerHTML = `<tr><td colspan="6" style="color:red;text-align:center">Lỗi tải dữ liệu: ${err.message}</td></tr>`;
+        }
+      }
+      // Mở modal thêm mới
+      function openAddModal() {
+        document.getElementById("modalTitle").textContent =
+          "Thêm Mã Giảm Giá Mới";
+        document.getElementById("promoForm").reset();
+        document.getElementById("maGiamGia").disabled = false;
+        document.getElementById("promoModal").style.display = "block";
+        document.getElementById("promoForm").onsubmit = addPromo;
+      }
+
+      // Mở modal sửa
+      function openEditModal(ma, phanTram, batDau, hetHan, moTa) {
+        document.getElementById("modalTitle").textContent = "Sửa Mã Giảm Giá";
+        document.getElementById("maGiamGia").value = ma;
+        document.getElementById("maGiamGia").disabled = true; // Không cho sửa mã
+        document.getElementById("phanTram").value = phanTram;
+        document.getElementById("ngayBatDau").value = batDau.split("T")[0];
+        document.getElementById("ngayHetHan").value = hetHan.split("T")[0];
+        document.getElementById("moTa").value = moTa;
+        document.getElementById("promoModal").style.display = "block";
+        document.getElementById("promoForm").onsubmit = (e) => editPromo(e, ma);
+      }
+
+      // Đóng modal
+      function closeModal() {
+        document.getElementById("promoModal").style.display = "none";
+      }
+
+      // Thêm mới khuyến mãi
+      async function addPromo(e) {
+        e.preventDefault();
+        const data = {
+          MaGiamGia: document.getElementById("maGiamGia").value.trim(),
+          PhanTram: parseInt(document.getElementById("phanTram").value),
+          NgayBatDau: document.getElementById("ngayBatDau").value,
+          NgayHetHan: document.getElementById("ngayHetHan").value,
+          MoTa: document.getElementById("moTa").value.trim(),
+        };
+
+        if (
+          !data.MaGiamGia ||
+          !data.PhanTram ||
+          !data.NgayBatDau ||
+          !data.NgayHetHan
+        ) {
+          alert("Vui lòng điền đầy đủ thông tin!");
+          return;
+        }
+
+        try {
+          const res = await fetch(API_GIAMGIA, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+
+          if (!res.ok) throw new Error("Lỗi thêm khuyến mãi");
+          alert("Thêm mã giảm giá thành công!");
+          closeModal();
+          loadPromotions();
+        } catch (err) {
+          alert("Lỗi: " + err.message);
+        }
+      }
+
+      // Sửa khuyến mãi
+      async function editPromo(e, ma) {
+        e.preventDefault();
+        const data = {
+          PhanTram: parseInt(document.getElementById("phanTram").value),
+          NgayBatDau: document.getElementById("ngayBatDau").value,
+          NgayHetHan: document.getElementById("ngayHetHan").value,
+          MoTa: document.getElementById("moTa").value.trim(),
+        };
+
+        try {
+          const res = await fetch(`${API_GIAMGIA}/${ma}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+
+          if (!res.ok) throw new Error("Lỗi cập nhật");
+          alert("Cập nhật thành công!");
+          closeModal();
+          loadPromotions();
+        } catch (err) {
+          alert("Lỗi: " + err.message);
+        }
+      }
+
+      async function deletePromo(ma) {
+        if (!confirm("Bạn chắc chắn muốn xóa mã giảm giá này?")) return;
+
+        try {
+          const encodedMa = encodeURIComponent(ma); // Encode mã để tránh lỗi ký tự đặc biệt
+          const res = await fetch(`${API_GIAMGIA}/${encodedMa}`, {
+            method: "DELETE",
+          });
+          if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.message || "Lỗi xóa");
+          }
+          alert("Xóa thành công!");
+          loadPromotions();
+        } catch (err) {
+          alert("Lỗi: " + err.message);
+        }
+      }
+
+      // Đăng xuất
+      function logout() {
+        localStorage.removeItem("user");
+        window.location.href = "login.html";
+      }
+    </script>
+  </body>
+</html>

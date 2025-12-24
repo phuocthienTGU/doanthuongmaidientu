@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Quản lý Đơn hàng</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f5f5f5;
+        margin: 0;
+      }
+      header {
+        background: #d6001c;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        font-size: 24px;
+      }
+      .container {
+        max-width: 1400px;
+        margin: 20px auto;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 12px;
+        text-align: center;
+      }
+      th {
+        background: #d6001c;
+        color: white;
+      }
+      .summary-box {
+        background: #f8f9fa;
+        padding: 20px;
+        margin: 20px 0;
+        border-radius: 8px;
+      }
+      .summary-item {
+        text-align: center;
+        margin: 10px 0;
+      }
+      .summary-item h4 {
+        margin: 0 0 5px;
+        color: #d6001c;
+      }
+      .filter-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 20px;
+        align-items: center;
+      }
+      input[type="date"],
+      select,
+      button {
+        padding: 8px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+      }
+      button {
+        background: #d6001c;
+        color: white;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #b30015;
+      }
+      .btn-view {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      #detailModal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        justify-content: center;
+        align-items: center;
+      }
+      .modal-content {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 900px;
+        max-height: 85vh;
+        overflow-y: auto;
+      }
+      .close-btn {
+        float: right;
+        font-size: 30px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="img-config.js"></script>
+    <header>QUẢN LÝ ĐƠN HÀNG</header>
+    <div class="container">
+      <a href="admin.html" style="color: #d6001c">← Quay lại</a>
+
+      <!-- Bộ lọc doanh thu -->
+      <div class="filter-bar">
+        <label>Từ ngày:</label>
+        <input type="date" id="fromDate" />
+        <label>Đến ngày:</label>
+        <input type="date" id="toDate" />
+        <select id="periodType">
+          <option value="custom">Tùy chỉnh khoảng thời gian</option>
+          <option value="today">Hôm nay</option>
+          <option value="month">Tháng này</option>
+          <option value="year">Năm này</option>
+        </select>
+        <button onclick="loadOrders()">Xem doanh thu</button>
+      </div>
+
+      <!-- Hiển thị tổng doanh thu -->
+      <div class="summary-box" id="summaryBox">
+        <div class="summary-item">
+          <h4>Tổng doanh thu</h4>
+          <p id="totalRevenue">0₫</p>
+        </div>
+        <div class="summary-item">
+          <h4>Số đơn hàng</h4>
+          <p id="totalOrders">0</p>
+        </div>
+        <div class="summary-item">
+          <h4>Khoảng thời gian</h4>
+          <p id="timeRange">Chưa chọn</p>
+        </div>
+      </div>
+
+      <!-- Bộ lọc danh sách đơn -->
+      <div class="filter-bar">
+        <input
+          type="text"
+          id="searchMaDon"
+          placeholder="Tìm mã đơn hàng..."
+          oninput="filterOrders()"
+        />
+        <select id="filterTrangThai" onchange="filterOrders()">
+          <option value="">Tất cả trạng thái</option>
+          <option value="cho_duyet">Chờ duyệt</option>
+          <option value="dang_giao">Đang giao</option>
+          <option value="hoan_thanh">Hoàn thành</option>
+          <option value="huy">Hủy</option>
+        </select>
+      </div>
+
+      <table id="orderTable">
+        <thead>
+          <tr>
+            <th>Mã ĐH</th>
+            <th>Khách hàng</th>
+            <th>Ngày đặt</th>
+            <th>Tổng tiền</th>
+            <th>Trạng thái</th>
+            <th>Hình thức TT</th>
+            <th>Chi tiết</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Modal xem chi tiết đơn hàng -->
+    <div id="detailModal">
+      <div class="modal-content">
+        <span class="close-btn" onclick="closeDetailModal()">×</span>
+        <h2>Chi tiết đơn hàng <span id="detailMaDon"></span></h2>
+        <p><strong>Khách hàng:</strong> <span id="detailKhachHang"></span></p>
+        <p><strong>Ngày đặt:</strong> <span id="detailNgayDat"></span></p>
+        <p><strong>Trạng thái:</strong> <span id="detailTrangThai"></span></p>
+        <p>
+          <strong>Hình thức thanh toán:</strong>
+          <span id="detailThanhToan"></span>
+        </p>
+        <p><strong>Tổng tiền:</strong> <span id="detailTongTien"></span></p>
+
+        <h3>Danh sách sản phẩm</h3>
+        <table id="detailItemsTable">
+          <thead>
+            <tr>
+              <th>Tên món/combo</th>
+              <th>Số lượng</th>
+              <th>Đơn giá</th>
+              <th>Thành tiền</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      const API = window.API_BASE + "/api/donhang";
+      let allOrders = [];
+
+      async function loadOrders() {
+        try {
+          const res = await fetch(API);
+          if (!res.ok) throw new Error("Lỗi tải đơn hàng");
+          allOrders = await res.json();
+
+          // Lọc theo thời gian
+          const fromDate = document.getElementById("fromDate").value;
+          const toDate = document.getElementById("toDate").value;
+          const period = document.getElementById("periodType").value;
+
+          let filteredOrders = allOrders;
+
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+
+          if (period === "today") {
+            const start = new Date(today);
+            const end = new Date(today);
+            end.setHours(23, 59, 59, 999);
+            filteredOrders = allOrders.filter((o) => {
+              const orderDate = new Date(o.NgayDat);
+              return orderDate >= start && orderDate <= end;
+            });
+            document.getElementById("timeRange").textContent = "Hôm nay";
+          } else if (period === "month") {
+            const start = new Date(today.getFullYear(), today.getMonth(), 1);
+            const end = new Date(
+              today.getFullYear(),
+              today.getMonth() + 1,
+              0,
+              23,
+              59,
+              59,
+              999
+            );
+            filteredOrders = allOrders.filter((o) => {
+              const orderDate = new Date(o.NgayDat);
+              return orderDate >= start && orderDate <= end;
+            });
+            document.getElementById("timeRange").textContent =
+              "Tháng " + (today.getMonth() + 1) + "/" + today.getFullYear();
+          } else if (period === "year") {
+            const start = new Date(today.getFullYear(), 0, 1);
+            const end = new Date(today.getFullYear(), 11, 31, 23, 59, 59, 999);
+            filteredOrders = allOrders.filter((o) => {
+              const orderDate = new Date(o.NgayDat);
+              return orderDate >= start && orderDate <= end;
+            });
+            document.getElementById("timeRange").textContent =
+              "Năm " + today.getFullYear();
+          } else if (fromDate && toDate) {
+            const start = new Date(fromDate);
+            const end = new Date(toDate);
+            end.setHours(23, 59, 59, 999);
+            filteredOrders = allOrders.filter((o) => {
+              const orderDate = new Date(o.NgayDat);
+              return orderDate >= start && orderDate <= end;
+            });
+            document.getElementById(
+              "timeRange"
+            ).textContent = `Từ ${fromDate} đến ${toDate}`;
+          } else {
+            document.getElementById("timeRange").textContent = "Tất cả";
+          }
+
+          renderOrders(filteredOrders);
+          calculateRevenue(filteredOrders);
+        } catch (err) {
+          alert("Lỗi tải đơn hàng: " + err.message);
+        }
+      }
+
+      function renderOrders(orders) {
+        const tbody = document.querySelector("#orderTable tbody");
+        tbody.innerHTML = "";
+        orders.forEach((o) => {
+          tbody.innerHTML += `
+            <tr>
+              <td>${o.MaDonHang}</td>
+              <td>${o.HoTen || "Khách vãng lai"}</td>
+              <td>${new Date(o.NgayDat).toLocaleString()}</td>
+              <td>${Number(o.TongTien).toLocaleString()}₫</td>
+              <td>${o.TrangThai}</td>
+              <td>${o.HinhThucThanhToan || "-"}</td>
+              <td>
+                <button class="btn btn-view" onclick="viewOrderDetail('${
+                  o.MaDonHang
+                }')">Xem</button>
+              </td>
+            </tr>
+          `;
+        });
+      }
+
+      function calculateRevenue(orders) {
+        let totalRev = 0;
+        orders.forEach((o) => {
+          if (o.TrangThai === "hoan_thanh") {
+            totalRev += Number(o.TongTien);
+          }
+        });
+
+        document.getElementById("totalRevenue").textContent =
+          totalRev.toLocaleString() + "₫";
+        document.getElementById("totalOrders").textContent = orders.length;
+      }
+
+      function filterOrders() {
+        const search = document
+          .getElementById("searchMaDon")
+          .value.trim()
+          .toLowerCase();
+        const statusFilter = document.getElementById("filterTrangThai").value;
+
+        let filtered = allOrders;
+        if (search) {
+          filtered = filtered.filter((o) =>
+            o.MaDonHang.toString().toLowerCase().includes(search)
+          );
+        }
+        if (statusFilter) {
+          filtered = filtered.filter((o) => o.TrangThai === statusFilter);
+        }
+
+        renderOrders(filtered);
+      }
+
+      async function viewOrderDetail(maDon) {
+        try {
+          const res = await fetch(`${API}/${maDon}`);
+          if (!res.ok) throw new Error("Không tìm thấy đơn hàng");
+          const order = await res.json();
+
+          // Lấy chi tiết sản phẩm
+          const detailRes = await fetch(
+            `${window.API_BASE}/api/donhangchitiet/donhang/${maDon}`
+          );
+          const items = await detailRes.json();
+
+          document.getElementById("detailMaDon").textContent = order.MaDonHang;
+          document.getElementById("detailKhachHang").textContent =
+            order.HoTen || "Khách vãng lai";
+          document.getElementById("detailNgayDat").textContent = new Date(
+            order.NgayDat
+          ).toLocaleString();
+          document.getElementById("detailTrangThai").textContent =
+            order.TrangThai;
+          document.getElementById("detailThanhToan").textContent =
+            order.HinhThucThanhToan || "-";
+          document.getElementById("detailTongTien").textContent =
+            Number(order.TongTien).toLocaleString() + "₫";
+
+          const tbody = document.querySelector("#detailItemsTable tbody");
+          tbody.innerHTML = "";
+          items.forEach((item) => {
+            const ten = item.TenSanPham || item.TenCombo || "Không xác định";
+            tbody.innerHTML += `
+              <tr>
+                <td>${ten}</td>
+                <td>${item.SoLuong}</td>
+                <td>${Number(item.DonGia).toLocaleString()}₫</td>
+                <td>${Number(item.ThanhTien).toLocaleString()}₫</td>
+              </tr>
+            `;
+          });
+
+          document.getElementById("detailModal").style.display = "flex";
+        } catch (err) {
+          alert("Lỗi xem chi tiết: " + err.message);
+        }
+      }
+
+      function closeDetailModal() {
+        document.getElementById("detailModal").style.display = "none";
+      }
+
+      // Load ban đầu
+      loadOrders();
+    </script>
+  </body>
+</html>

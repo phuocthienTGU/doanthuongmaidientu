@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - Jollibee</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f0f0f0;
+      }
+      header {
+        background: #d6001c;
+        color: white;
+        padding: 20px;
+        text-align: center;
+        font-size: 28px;
+        font-weight: bold;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 30px auto;
+        padding: 20px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      .menu-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+      }
+      .menu-item {
+        background: #fff;
+        border: 2px solid #d6001c;
+        border-radius: 8px;
+        padding: 30px;
+        text-align: center;
+        transition: 0.3s;
+      }
+      .menu-item:hover {
+        background: #d6001c;
+        color: white;
+        transform: scale(1.05);
+      }
+      .menu-item a {
+        color: inherit;
+        text-decoration: none;
+        font-size: 20px;
+        font-weight: bold;
+      }
+      footer {
+        text-align: center;
+        padding: 20px;
+        background: #d6001c;
+        color: white;
+        margin-top: 50px;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="img-config.js"></script>
+    <header>QUẢN TRỊ JOLLIBEE</header>
+
+    <div class="container">
+      <h2 style="text-align: center; color: #d6001c">Chào mừng Admin</h2>
+      <div class="menu-grid">
+        <div class="menu-item">
+          <a href="admin-sanpham.html">Quản lý Sản phẩm</a>
+        </div>
+        <div class="menu-item">
+          <a href="admin-combo.html">Quản lý Combo</a>
+        </div>
+        <div class="menu-item">
+          <a href="admin-danhmuc.html">Quản lý Danh mục</a>
+        </div>
+        <div class="menu-item">
+          <a href="admin-donhang.html">Quản lý Đơn hàng</a>
+        </div>
+        <div class="menu-item">
+          <a href="admin-users.html">Quản lý Người dùng</a>
+        </div>
+        <div class="menu-item">
+          <a href="admin-khuyenmai.html">Quản lý Khuyến mãi</a>
+        </div>
+        <div class="menu-item">
+          <a href="admin-chat.html">Quản lý Chat Hỗ trợ</a>
+        </div>
+        <div class="menu-item"><a href="index.html">← Về trang chủ</a></div>
+      </div>
+    </div>
+
+    <footer>© 2025 Jollibee Admin Panel</footer>
+
+    <script>
+      // Kiểm tra quyền admin
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      if (!user || user.vaiTro !== "admin") {
+        alert("Bạn không có quyền truy cập trang Admin!");
+        window.location.href = "login.html";
+      }
+    </script>
+  </body>
+</html>
