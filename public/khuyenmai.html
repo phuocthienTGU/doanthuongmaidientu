@@ -670,7 +670,7 @@
     </footer>
 
     <script>
-      const API_GIAMGIA = window.API_BASE + "/api/giamgia";
+      const API_GIAMGIA = window.API_BASE + "/api/giamgia/active";
       const API_COMBO = window.API_BASE + "/api/combo";
       const API_GIOHANG_ADD = window.API_BASE + "/api/giohang/add";
 
@@ -910,34 +910,42 @@
         const comboGrid = document.getElementById("combo-grid");
 
         try {
-          // Load khuyến mãi
-          const giamRes = await fetch(API_GIAMGIA);
+          // === LOAD KHUYẾN MÃI ĐANG HIỂN THỊ ===
+          const giamRes = await fetch(API_GIAMGIA); // giờ là /active
+          if (!giamRes.ok) throw new Error("Lỗi tải khuyến mãi");
           const giamGia = await giamRes.json();
 
-          promoGrid.innerHTML =
-            giamGia.length > 0
-              ? giamGia
-                  .map(
-                    (g) => `
-          <div class="promo-card">
-            <div class="promo-badge">-${g.PhanTram}%</div>
-            <img src="${window.IMG_BASE}/${
-                      g.HinhAnh || "ga-ran-1.jpg"
-                    }" class="promo-image" alt="${
-                      g.MaGiamGia
-                    }" onerror="this.src='${window.IMG_BASE}/ga-ran-1.jpg'">
-            <div class="promo-content">
-              <h3>Mã: ${g.MaGiamGia}</h3>
-              <p>${g.MoTa || "Ưu đãi đặc biệt"}</p>
-              <small>Hiệu lực: ${new Date(g.NgayBatDau).toLocaleDateString(
-                "vi-VN"
-              )} - ${new Date(g.NgayHetHan).toLocaleDateString("vi-VN")}</small>
+          if (giamGia.length > 0) {
+            promoGrid.innerHTML = giamGia
+              .map(
+                (g) => `
+        <div class="promo-card">
+          <div class="promo-badge">-${g.PhanTram}%</div>
+          <img src="${window.IMG_BASE}/${g.HinhAnh || "ga-ran-1.jpg"}" 
+               class="promo-image" 
+               alt="${g.MaGiamGia}" 
+               onerror="this.src='${window.IMG_BASE}/ga-ran-1.jpg'">
+          <div class="promo-content">
+            <h3>Mã: ${g.MaGiamGia}</h3>
+            <p>${g.MoTa || "Ưu đãi đặc biệt từ Jollibee Clone"}</p>
+            <div class="promo-details">
+              <small style="color:#666">
+                Hiệu lực: ${new Date(g.NgayBatDau).toLocaleDateString("vi-VN")} 
+                - ${new Date(g.NgayHetHan).toLocaleDateString("vi-VN")}
+              </small>
             </div>
           </div>
-        `
-                  )
-                  .join("")
-              : '<p style="grid-column:1/-1;text-align:center;color:#999">Chưa có khuyến mãi nào đang diễn ra</p>';
+        </div>
+      `
+              )
+              .join("");
+          } else {
+            promoGrid.innerHTML = `
+        <p style="grid-column:1/-1; text-align:center; color:#999; font-size:18px; padding:40px">
+          Hiện tại chưa có khuyến mãi nào đang diễn ra 😔<br>
+          <small>Hãy quay Vòng Quay May Mắn để nhận voucher nhé!</small>
+        </p>`;
+          }
 
           // Load combo
           const comboRes = await fetch(API_COMBO);
